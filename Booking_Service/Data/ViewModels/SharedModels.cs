@@ -13,7 +13,7 @@ namespace Data.ViewModels
         public int NumId { get; set; }
     }
 
-    public class UnitV2Model
+    public class UnitModel
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
@@ -22,19 +22,19 @@ namespace Data.ViewModels
         public string Username { get; set; }
     }
 
-    public class DoctorV2Model
+    public class DoctorModel
     {
         public Guid Id { get; set; }
         public string Fullname { get; set; }
     }
 
-    public class RoomV2Model
+    public class RoomModel
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
     }
 
-    public class ServiceV2Model
+    public class ServiceModel
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
@@ -46,7 +46,7 @@ namespace Data.ViewModels
         public string Name { get; set; }
     }
 
-    public class CustomerV2Model
+    public class CustomerModel
     {
         public Guid Id { get; set; }
         public string Fullname { get; set; }
@@ -64,16 +64,16 @@ namespace Data.ViewModels
         public string VaccinationCode { get; set; }
     }
 
-    public class ContactV2Model
+    public class ContactModel
     {
         public string Fullname { get; set; }
         public string Phone { get; set; }
         public string Relationship { get; set; }
     }
 
-    public class InjectionObjectModel
+    public class IntervalSyncModel
     {
         public Guid Id { get; set; }
-        public string Name { get; set; }
+        public bool IsAvailable { get; set; }
     }
 }

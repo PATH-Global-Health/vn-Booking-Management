@@ -11,35 +11,15 @@ namespace Services.MappingProfile
     {
         public MapperProfile()
         {
-            CreateMap<MedicalTestCreateModel, MedicalTest>()
-                .ForMember(m => m.Form, op => op.MapFrom(vm => BsonDocument.Parse(vm.Form.ToString())));
-            CreateMap<MedicalTest, MedicalTestViewModel>()
-                .ForMember(m => m.Form, op => op.MapFrom(vm => BsonSerializer.Deserialize<object>(vm.Form, null)));
-
+            //
             CreateMap<Contact, ContactModel>().ReverseMap();
             CreateMap<Customer, CustomerModel>().ReverseMap();
             CreateMap<Doctor, DoctorModel>().ReverseMap();
-            CreateMap<Instance, InstanceModel>().ReverseMap();
-            CreateMap<Instance, InstanceViewModel>().ReverseMap();
+            CreateMap<Interval, IntervalModel>().ReverseMap();
             CreateMap<Room, RoomModel>().ReverseMap();
             CreateMap<Service, ServiceModel>().ReverseMap();
-            CreateMap<Unit, UnitModel>().ReverseMap();
-            //
-
-            CreateMap<VaccinationCreateModel, Vaccination>()
-                .ForMember(m => m.Form, op => op.MapFrom(vm => BsonDocument.Parse(vm.Form.ToString())));
-            CreateMap<Vaccination, VaccinationViewModel>()
-                .ForMember(m => m.Form, op => op.MapFrom(vm => BsonSerializer.Deserialize<object>(vm.Form, null)));
-            //
-            CreateMap<ContactV2, ContactV2Model>().ReverseMap();
-            CreateMap<CustomerV2, CustomerV2Model>().ReverseMap();
-            CreateMap<DoctorV2, DoctorV2Model>().ReverseMap();
-            CreateMap<Interval, IntervalModel>().ReverseMap();
-            CreateMap<RoomV2, RoomV2Model>().ReverseMap();
-            CreateMap<ServiceV2, ServiceV2Model>().ReverseMap();
             CreateMap<ServiceType, ServiceTypeModel>().ReverseMap();
-            CreateMap<UnitV2, UnitV2Model>().ReverseMap();
-            CreateMap<InjectionObject, InjectionObjectModel>().ReverseMap();
+            CreateMap<Unit, UnitModel>().ReverseMap();
             CreateMap<ExitInformation, ExitInformationModel>().ReverseMap();
             //
             //CreateMap<FormFile, FormFileCreateModel>().ReverseMap();
@@ -48,7 +28,7 @@ namespace Services.MappingProfile
                 .ForMember(m => m.Form, op => op.MapFrom(vm => vm.Form != null ? BsonDocument.Parse(vm.Form.ToString()) : null));
             CreateMap<Examination, ExaminationViewModel>()
                 .ForMember(m => m.Form, op => op.MapFrom(vm => BsonSerializer.Deserialize<object>(vm.Form, null)));
-            CreateMap<ExaminationCreateModel, BookingExamModelV2>()
+            CreateMap<ExaminationCreateModel, BookingExamModel>()
                 .ForMember(m => m.PersonId, op => op.MapFrom(vm => vm.Customer.Id))
                 .ForMember(m => m.PersonName, op => op.MapFrom(vm => vm.Customer.Fullname))
                 .ForMember(m => m.Address, op => op.MapFrom(vm => vm.Customer.Address))

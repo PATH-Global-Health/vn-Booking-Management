@@ -15,7 +15,7 @@ namespace Data.MongoCollections
         public int Version { get; set; }
     }
 
-    public class UnitV2
+    public class Unit
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
@@ -24,19 +24,19 @@ namespace Data.MongoCollections
         public string Username { get; set; }
     }
 
-    public class DoctorV2
+    public class Doctor
     {
         public Guid Id { get; set; }
         public string Fullname { get; set; }
     }
 
-    public class RoomV2
+    public class Room
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
     }
 
-    public class ServiceV2
+    public class Service
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
@@ -48,7 +48,7 @@ namespace Data.MongoCollections
         public string Name { get; set; }
     }
 
-    public class CustomerV2
+    public class Customer
     {
         public Guid Id { get; set; }
         public string Fullname { get; set; }
@@ -66,7 +66,7 @@ namespace Data.MongoCollections
         public string VaccinationCode { get; set; }
     }
 
-    public class ContactV2
+    public class Contact
     {
         public string Fullname { get; set; }
         public string Phone { get; set; }

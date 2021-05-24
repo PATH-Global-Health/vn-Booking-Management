@@ -15,12 +15,12 @@ namespace Data.MongoCollections
         [BsonId()]
         public Guid Id { get; set; } = Guid.NewGuid();
         public Interval Interval { get; set; }
-        public UnitV2 Unit { get; set; }
-        public DoctorV2 Doctor { get; set; }
-        public RoomV2 Room { get; set; }
-        public ServiceV2 Service { get; set; }
-        public CustomerV2 Customer { get; set; }
-        public List<ContactV2> Contacts { get; set; }
+        public Unit Unit { get; set; }
+        public Doctor Doctor { get; set; }
+        public Room Room { get; set; }
+        public Service Service { get; set; }
+        public Customer Customer { get; set; }
+        public List<Contact> Contacts { get; set; }
         public BookingStatus Status { get; set; }
         public string Note { get; set; }
         public DateTime Date { get; set; }

@@ -17,7 +17,7 @@ namespace Services.Utils
             return newUsername;
         }
 
-        public static string GetFullAddress(this CustomerV2 customer)
+        public static string GetFullAddress(this Customer customer)
         {
             string result = null;
             if (customer != null)

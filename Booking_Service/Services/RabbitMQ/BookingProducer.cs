@@ -32,7 +32,7 @@ namespace Services.RabbitMQ
         {
             _configuration = configuration;
             _factory = new ConnectionFactory();
-            _configuration.Bind("RabbitMqConnectionV2", _factory);
+            _configuration.Bind("RabbitMqConnection", _factory);
             
             timeout = _configuration.GetValue<int>("RabbitMQRequestTimeout");
         }

@@ -52,16 +52,11 @@ namespace Booking_Service_App.Extensions
 
         public static void AddBusinessServices(this IServiceCollection services)
         {
-            services.AddScoped<IMedicalTestService, MedicalTestService>();
-            services.AddScoped<IVaccinationService, VaccinationService>();
             services.AddScoped<IExaminationService, ExaminationService>();
-            services.AddScoped<IExcelService, ExcelService>();
-            services.AddScoped<IJwtHandler, JwtHandler>();
             services.AddScoped<IProducerMQ, Producer>();
             services.AddScoped<IBookingProducer, BookingProducer>();
 
-            //services.AddHostedService<BookingUpdateStatusConsumer>();
-            services.AddHostedService<BookingUpdateStatusConsumerV2>();
+            services.AddHostedService<BookingUpdateStatusConsumer>();
             services.AddHostedService<BookingUpdateResultConsumer>();
         }
     }

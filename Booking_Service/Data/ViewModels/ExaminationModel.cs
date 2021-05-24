@@ -10,16 +10,16 @@ namespace Data.ViewModels
         [Required]
         public IntervalModel Interval { get; set; }
         [Required]
-        public UnitV2Model Unit { get; set; }
+        public UnitModel Unit { get; set; }
         [Required]
-        public DoctorV2Model Doctor { get; set; }
+        public DoctorModel Doctor { get; set; }
         [Required]
-        public RoomV2Model Room { get; set; }
+        public RoomModel Room { get; set; }
         [Required]
-        public ServiceV2Model Service { get; set; }
+        public ServiceModel Service { get; set; }
         [Required]
-        public CustomerV2Model Customer { get; set; }
-        public List<ContactV2Model> Contacts { get; set; }
+        public CustomerModel Customer { get; set; }
+        public List<ContactModel> Contacts { get; set; }
         public string Note { get; set; }
         public Object Form { get; set; }
         public DateTime Date { get; set; }

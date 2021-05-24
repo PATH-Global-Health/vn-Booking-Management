@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Services.Core;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -29,7 +30,7 @@ namespace Services.RabbitMQ
             var factory = new ConnectionFactory();
             _configuration.Bind("RabbitMqConnection", factory);
             syncQueue = _configuration.GetValue<string>("UpdateBookingStatus");
-
+            factory.ClientProvidedName = syncQueue + " | Booking";
             connection = factory.CreateConnection();
             channel = connection.CreateModel();
             InitRabbitMQ();
@@ -93,12 +94,12 @@ namespace Services.RabbitMQ
                 using (var scope = _scopeFactory.CreateScope())
                 {
                     // get service instance
-                    IMedicalTestService medicalService = scope.ServiceProvider.GetRequiredService<IMedicalTestService>();
+                    var examService = scope.ServiceProvider.GetRequiredService<IExaminationService>();
 
                     // 
-                    var model = JsonConvert.DeserializeObject<MedicalTestUpdateModel>(message);
+                    var model = JsonConvert.DeserializeObject<ExaminationUpdateModel>(message);
                     // sync
-                    result = medicalService.UpdateFromExamination(model).Result;
+                    result = examService.UpdateFromExamination(model).Result;
                 }
             }
             catch (Exception e)

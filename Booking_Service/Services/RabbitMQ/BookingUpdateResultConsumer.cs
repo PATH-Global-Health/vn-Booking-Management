@@ -28,7 +28,7 @@ namespace Services.RabbitMQ
             _scopeFactory = scopeFactory;
             _configuration = configuration;
             var factory = new ConnectionFactory();
-            _configuration.Bind("RabbitMqConnectionV2", factory);
+            _configuration.Bind("RabbitMqConnection", factory);
             syncQueue = _configuration.GetValue<string>("UpdateBookingResult");
             factory.ClientProvidedName = syncQueue + " | Consumer";
             connection = factory.CreateConnection();

@@ -111,7 +111,7 @@ namespace Services.Core
                     if (isBookingExam)
                     {
                         var examinationUnitUsername = model.Unit.Username.GetUnitUsernameForExamination();
-                        var bookingModel = _mapper.Map<ExaminationCreateModel, BookingExamModelV2>(model);
+                        var bookingModel = _mapper.Map<ExaminationCreateModel, BookingExamModel>(model);
                         bookingModel.UnitUsername = examinationUnitUsername;
                         bookingModel.BookingExamId = newModel.Id;
                         var examResponse = BookingExamination(bookingModel);
@@ -156,7 +156,7 @@ namespace Services.Core
                     }
                     if (isBookingExam && examResult.Succeed)
                     {
-                        var cancelModel = new CancelBookingExamModelV2()
+                        var cancelModel = new CancelBookingExamModel()
                         {
                             IntervalId = model.Interval.Id,
                             PersonId = model.Customer.Id,
@@ -292,7 +292,7 @@ namespace Services.Core
                         if (modelUpdated.Unit.Username.Contains("hcdc."))
                         {
                             // create an exam cancel booking model
-                            var cancelModel = new CancelBookingExamModelV2()
+                            var cancelModel = new CancelBookingExamModel()
                             {
                                 BookingExamId = modelUpdated.Id,
                                 PersonId = modelUpdated.Customer.Id,
@@ -385,7 +385,7 @@ namespace Services.Core
             return result;
         }
 
-        private string BookingExamination(BookingExamModelV2 model)
+        private string BookingExamination(BookingExamModel model)
         {
             // to json
             var message = JsonConvert.SerializeObject(model);
@@ -395,7 +395,7 @@ namespace Services.Core
             return response;
         }
 
-        private string CancelBookingExamination(CancelBookingExamModelV2 model)
+        private string CancelBookingExamination(CancelBookingExamModel model)
         {
             // to json
             var message = JsonConvert.SerializeObject(model);
