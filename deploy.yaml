@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: booking
+  name: booking
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: booking
+  template:
+    metadata:
+      labels:
+        app: booking
+        build_number: ${BUILD_NUMBER}
+        role: rolling-update
+    spec:
+      containers:
+      - image: 192.168.1.2:5000/booking:latest
+        imagePullPolicy: Always
+        name: booking
+      imagePullSecrets:
+      - name: mydockercredentials
+  strategy:
+    type: RollingUpdate
+  revisionHistoryLimit: 1
