@@ -20,7 +20,7 @@ namespace Data.ViewModels
         [Required]
         public CustomerModel Customer { get; set; }
         public List<ContactModel> Contacts { get; set; }
-        public string Note { get; set; }
+        public string Note { get; set; }    
         public Object Form { get; set; }
         public DateTime Date { get; set; }
         public string BookedByUser { get; set; }
