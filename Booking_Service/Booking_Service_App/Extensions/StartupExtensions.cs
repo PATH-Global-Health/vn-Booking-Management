@@ -54,10 +54,6 @@ namespace Booking_Service_App.Extensions
         {
             services.AddScoped<IExaminationService, ExaminationService>();
             services.AddScoped<IProducerMQ, Producer>();
-            services.AddScoped<IBookingProducer, BookingProducer>();
-
-            services.AddHostedService<BookingUpdateStatusConsumer>();
-            services.AddHostedService<BookingUpdateResultConsumer>();
         }
     }
 }

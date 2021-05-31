@@ -24,13 +24,11 @@ namespace Services.Core
         Task<ResultModel> Get(Guid hospitalId, int? status = null, DateTime? from = null, DateTime? to = null);
         Task<ResultModel> Update(ExaminationUpdateModel model);
         Task<ResultModel> UpdateResult(ExaminationUpdateResultModel model);
-        Task<ResultModel> UpdateFromExamination(ExaminationUpdateModel model);
         Task<ResultModel> GetByCustomer(string username);
         Task<ResultModel> GetById(Guid id);
         Task<ResultModel> CreateResultForm(FormFileCreateModel model);
         Task<ResultModel> GetResultForm(Guid examId);
         Task<ResultModel> UpdateResultForm(FormFileUpdateModel model);
-        Task<ResultModel> UpdateDB();
         Task<ResultModel> Statistic(Guid unitId, DateTime? from = null, DateTime? to = null);
     }
 
@@ -39,21 +37,18 @@ namespace Services.Core
         private ApplicationDbContext _context;
         private IMapper _mapper;
         private IProducerMQ _producer;
-        private IBookingProducer _bProducer;
 
-        public ExaminationService(ApplicationDbContext context, IMapper mapper, IProducerMQ producer, IBookingProducer bProducer)
+        public ExaminationService(ApplicationDbContext context, IMapper mapper, IProducerMQ producer)
         {
             _context = context;
             _mapper = mapper;
             _producer = producer;
-            _bProducer = bProducer;
         }
 
         public async Task<ResultModel> Add(ExaminationCreateModel model, string username)
         {
             var result = new ResultModel();
             bool isBookingExam = model.Unit.Username.Contains("hcdc.");
-            ResultModel examResult = new ResultModel();
             ResultModel syncResult = new ResultModel();
 
             using (var session = _context.StartSession())
@@ -106,29 +101,13 @@ namespace Services.Core
                     newModel.BookedByUser = username;
                     newModel.Status = BookingStatus.UNFINISHED;
                     await _context.Examinations.InsertOneAsync(session, newModel);
-
-                    // booking if posible
-                    if (isBookingExam)
-                    {
-                        var examinationUnitUsername = model.Unit.Username.GetUnitUsernameForExamination();
-                        var bookingModel = _mapper.Map<ExaminationCreateModel, BookingExamModel>(model);
-                        bookingModel.UnitUsername = examinationUnitUsername;
-                        bookingModel.BookingExamId = newModel.Id;
-                        var examResponse = BookingExamination(bookingModel);
-                        examResult = JsonConvert.DeserializeObject<ResultModel>(examResponse);
-                    }
-                    if (isBookingExam && !examResult.Succeed)
-                    {
-                        throw new Exception(examResult.ErrorMessage);
-                    }
-
-                    // update available false
+                    
+                    // đồng bộ với Schedule
                     var syncModel = new IntervalSyncModel()
                     {
                         Id = model.Interval.Id,
                         IsAvailable = false,
                     };
-                    // syncing instance
                     var syncResponse = SyncInterval(syncModel);
                     syncResult = JsonConvert.DeserializeObject<ResultModel>(syncResponse);
                     if (!syncResult.Succeed)
@@ -143,7 +122,7 @@ namespace Services.Core
                 catch (Exception e)
                 {
                     await session.AbortTransactionAsync();
-                    //
+                    // Fail vì 1 lý do gì đó, nhưng schedule đã thay đổi trạng thái thành công -> thay đổi trạng thái của schedule về như cũ
                     if (syncResult.Succeed)
                     {
                         // create an instanceSync model 
@@ -154,18 +133,9 @@ namespace Services.Core
                         };
                         SyncInterval(syncModel);
                     }
-                    if (isBookingExam && examResult.Succeed)
-                    {
-                        var cancelModel = new CancelBookingExamModel()
-                        {
-                            IntervalId = model.Interval.Id,
-                            PersonId = model.Customer.Id,
-                        };
-                        CancelBookingExamination(cancelModel);
-                    }
                     result.Succeed = false;
                     result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
-                    result.ErrorMessage += Environment.NewLine + "Unit Username: " + model.Unit.Username.GetUnitUsernameForExamination();
+                    result.ErrorMessage += Environment.NewLine + "Unit Username: " + model.Unit.Username.GetUnitUsernameForExamination(); // Debug, ko cần thiết
                 }
             }
             return result;
@@ -299,20 +269,7 @@ namespace Services.Core
                                 IntervalId = modelUpdated.Interval.Id,
                                 Status = model.Status
                             };
-
-                            // Cancel booking
-                            var examResponse = CancelBookingExamination(cancelModel);
-                            var examResult = JsonConvert.DeserializeObject<ResultModel>(examResponse);
-                            // after sync success
-
-                            // throw if fail to cancel
-                            if (!examResult.Succeed)
-                                throw new Exception("Không thể hủy bên xét nghiệm: " + examResult.ErrorMessage);
                         }
-                    }
-                    else
-                    {
-                        throw new Exception("Không phải hủy lịch wtf.");
                     }
 
                     result.Data = _mapper.Map<Examination, ExaminationViewModel>(modelUpdated);
@@ -328,81 +285,6 @@ namespace Services.Core
                 }
             }
             return result;
-        }
-
-        public async Task<ResultModel> UpdateFromExamination(ExaminationUpdateModel model)
-        {
-            var result = new ResultModel();
-            using (var session = _context.StartSession())
-            {
-                session.StartTransaction();
-
-                try
-                {
-                    // filter by Id
-                    var filter = Builders<Examination>.Filter.Eq(mt => mt.Id, model.Id);
-                    // update status
-                    var update = Builders<Examination>.Update.Set(mt => mt.Status, (BookingStatus)model.Status);
-                    // update note if any
-                    if (!string.IsNullOrEmpty(model.Note))
-                    {
-                        update = update.Set(mt => mt.Note, model.Note);
-                    }
-
-                    // execute statement
-                    var updateResult = await _context.Examinations.UpdateOneAsync(session, filter, update);
-                    var resulted = await _context.Examinations.FindAsync(filter);
-                    var modelUpdated = resulted.FirstOrDefault();
-
-                    // try sync instance
-                    if (model.Status == (int)BookingStatus.CANCELED || model.Status == (int)BookingStatus.DOCTOR_CANCEL)
-                    {
-                        // create an instanceSync model 
-                        var syncModel = new IntervalSyncModel()
-                        {
-                            Id = modelUpdated.Interval.Id,
-                            IsAvailable = true,
-                        };
-
-                        // sync instance with MSSQL and api
-                        var syncResponse = SyncInterval(syncModel);
-                        var syncResult = JsonConvert.DeserializeObject<ResultModel>(syncResponse);
-                        if (!syncResult.Succeed)
-                            throw new Exception("Không thể đồng bộ với Shedule-Service: " + syncResult.ErrorMessage);
-                    }
-
-                    // commit transaction if status not canceled
-                    await session.CommitTransactionAsync();
-                    result.Succeed = true;
-                }
-                catch (Exception e)
-                {
-                    await session.AbortTransactionAsync();
-                    result.Succeed = false;
-                    result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
-                }
-            }
-            return result;
-        }
-
-        private string BookingExamination(BookingExamModel model)
-        {
-            // to json
-            var message = JsonConvert.SerializeObject(model);
-
-            var response = _bProducer.Call(message, RabbitQueue.NewExaminationBookingQueue); // call and wait for response
-
-            return response;
-        }
-
-        private string CancelBookingExamination(CancelBookingExamModel model)
-        {
-            // to json
-            var message = JsonConvert.SerializeObject(model);
-
-            var response = _bProducer.Call(message, RabbitQueue.NewCancelExaminationBookingQueue); // call and wait for response
-
-            return response;
         }
 
         private string SyncInterval(IntervalSyncModel syncModel)
@@ -581,25 +463,6 @@ namespace Services.Core
                 var modelUpdated = _context.Examinations.Find(filter).FirstOrDefault();
 
                 result.Data = _mapper.Map<Examination, ExaminationViewModel>(modelUpdated);
-                result.Succeed = true;
-            }
-            catch (Exception e)
-            {
-                result.Succeed = false;
-                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
-            }
-            return result;
-        }
-
-        public async Task<ResultModel> UpdateDB()
-        {
-            var result = new ResultModel();
-            try
-            {
-                var filter = Builders<ResultForm>.Filter.Empty;
-                UpdateDefinition<ResultForm> updateDefinition = Builders<ResultForm>.Update.Unset("MedId");
-                updateDefinition = updateDefinition.Unset("VacId");
-                await _context.ResultForm.UpdateOneAsync(filter, updateDefinition);
                 result.Succeed = true;
             }
             catch (Exception e)
