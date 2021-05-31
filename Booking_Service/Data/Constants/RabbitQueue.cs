@@ -13,6 +13,6 @@ namespace Data.Constants
         public const string NewExaminationBookingQueue = "NewExaminationBookingQueue";
         public const string NewCancelExaminationBookingQueue = "NewCancelExaminationBookingQueue";
         public const string NewUpdateBookingStatus = "NewUpdateBookingStatus";
-        public const string IntervalSyncQueue = "IntervalSyncQueue";
+        public const string BookingIntervalSyncQueue = "BookingIntervalSyncQueue";
     }
 }

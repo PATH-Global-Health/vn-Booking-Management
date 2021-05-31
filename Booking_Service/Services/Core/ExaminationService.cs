@@ -293,7 +293,7 @@ namespace Services.Core
             var message = JsonConvert.SerializeObject(syncModel);
 
             //sync instance with MSSQL and api
-            var response = _producer.Call(message, RabbitQueue.IntervalSyncQueue); // call and wait for response
+            var response = _producer.Call(message, RabbitQueue.BookingIntervalSyncQueue); // call and wait for response
 
             return response;
         }
