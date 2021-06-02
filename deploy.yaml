@@ -2,24 +2,24 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: booking
-  name: booking
+    app: c-his-booking
+  name: c-his-booking
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: booking
+      app: c-his-booking
   template:
     metadata:
       labels:
-        app: booking
+        app: c-his-booking
         build_number: ${BUILD_NUMBER}
         role: rolling-update
     spec:
       containers:
-      - image: 192.168.1.2:5000/booking:latest
+      - image: 192.168.1.2:5000/c-his-booking:beta
         imagePullPolicy: Always
-        name: booking
+        name: c-his-booking
       imagePullSecrets:
       - name: mydockercredentials
   strategy:
