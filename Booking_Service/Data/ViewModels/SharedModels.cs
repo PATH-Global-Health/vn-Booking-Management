@@ -76,4 +76,5 @@ namespace Data.ViewModels
         public Guid Id { get; set; }
         public bool IsAvailable { get; set; }
     }
+
 }

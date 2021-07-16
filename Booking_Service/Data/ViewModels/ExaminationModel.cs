@@ -26,6 +26,9 @@ namespace Data.ViewModels
         public string BookedByUser { get; set; }
         [Required]
         public ExitInformationModel ExitInformation { get; set; }
+
+        public string Rate { get; set; }
+
     }
 
     public class ExaminationViewModel : ExaminationCreateModel
@@ -36,6 +39,11 @@ namespace Data.ViewModels
         public DateTime? ResultDate { get; set; }
         public string Result { get; set; }
         public bool HasFile { get; set; }
+
+        public string Rating { get; set; }
+        public string TypeRating { get; set; }
+        public string Desc { get; set; }
+
     }
 
     public class ExaminationUpdateModel
@@ -47,6 +55,9 @@ namespace Data.ViewModels
         public string Note { get; set; }
 
         public string Rate { get; set; }
+        public string TypeRating { get; set; }
+        public string Desc { get; set; }
+
     }
 
     public class ExaminationUpdateResultModel
@@ -56,6 +67,7 @@ namespace Data.ViewModels
         [Required]
         public DateTime? ResultDate { get; set; }
         public string Result { get; set; }
+
     }
 
     public class ExitInformationModel
@@ -67,4 +79,14 @@ namespace Data.ViewModels
         [Required]
         public DateTime EntryingDate { get; set; }
     }
+
+    public class RatingExaminationModel
+    {
+        public string Rating { get; set; }
+        public string RatingType { get; set; }
+        public string Desc { get; set; }
+
+    }
+
+
 }

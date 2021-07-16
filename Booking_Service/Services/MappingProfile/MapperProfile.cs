@@ -21,9 +21,11 @@ namespace Services.MappingProfile
             CreateMap<ServiceType, ServiceTypeModel>().ReverseMap();
             CreateMap<Unit, UnitModel>().ReverseMap();
             CreateMap<ExitInformation, ExitInformationModel>().ReverseMap();
+
             //
             //CreateMap<FormFile, FormFileCreateModel>().ReverseMap();
             //
+
             CreateMap<ExaminationCreateModel, Examination>()
                 .ForMember(m => m.Form, op => op.MapFrom(vm => vm.Form != null ? BsonDocument.Parse(vm.Form.ToString()) : null));
             CreateMap<Examination, ExaminationViewModel>()

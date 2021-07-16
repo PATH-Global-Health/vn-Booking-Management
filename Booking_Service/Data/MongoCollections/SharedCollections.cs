@@ -80,4 +80,6 @@ namespace Data.MongoCollections
         public Guid ExamId { get; set; }
         public byte[] Data { get; set; }
     }
+
+    
 }

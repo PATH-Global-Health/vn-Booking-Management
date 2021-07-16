@@ -23,6 +23,7 @@ namespace Services.Core
         Task<ResultModel> Add(ExaminationCreateModel model, string username);
         Task<ResultModel> Get(Guid hospitalId, int? status = null, DateTime? from = null, DateTime? to = null);
         Task<ResultModel> Update(ExaminationUpdateModel model);
+
         Task<ResultModel> UpdateResult(ExaminationUpdateResultModel model);
         Task<ResultModel> GetByCustomer(string username);
         Task<ResultModel> GetById(Guid id);
@@ -30,6 +31,10 @@ namespace Services.Core
         Task<ResultModel> GetResultForm(Guid examId);
         Task<ResultModel> UpdateResultForm(FormFileUpdateModel model);
         Task<ResultModel> Statistic(Guid unitId, DateTime? from = null, DateTime? to = null);
+
+        ResultModel TestRabit(Guid intervalId);
+
+
     }
 
     public class ExaminationService : IExaminationService
@@ -45,15 +50,47 @@ namespace Services.Core
             _producer = producer;
         }
 
+        public ResultModel TestRabit(Guid intervalId)
+        {
+            var result = new ResultModel();
+            ResultModel syncResult = new ResultModel();
+
+            try
+            {
+                var syncModel = new IntervalSyncModel()
+                {
+                    Id = intervalId,
+                    IsAvailable = false,
+                };
+                var syncResponse = SyncInterval(syncModel);
+                syncResult = JsonConvert.DeserializeObject<ResultModel>(syncResponse);
+
+                if (!syncResult.Succeed)
+                {
+                    throw new Exception(syncResult.ErrorMessage);
+                }
+
+                result.Data = syncResult.Data;
+                result.Succeed = true;
+
+            }
+            catch (Exception e)
+            {
+                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+
+            return result;
+
+        }
         public async Task<ResultModel> Add(ExaminationCreateModel model, string username)
         {
             var result = new ResultModel();
             bool isBookingExam = model.Unit.Username.Contains("hcdc.");
             ResultModel syncResult = new ResultModel();
 
-            using (var session = _context.StartSession())
+            //using (var session = _context.StartSession())
             {
-                session.StartTransaction();
+                //session.StartTransaction();
                 try
                 {
                     if (string.IsNullOrEmpty(username))
@@ -83,12 +120,12 @@ namespace Services.Core
                             Id = model.Interval.Id,
                             Version = 0
                         };
-                        await _context.Interval.InsertOneAsync(session, loadedInstance);
+                        await _context.Interval.InsertOneAsync( loadedInstance);
                     }
                     var version = loadedInstance.Version;
 
                     loadedInstance.Version++;
-                    replaceResult = await _context.Interval.ReplaceOneAsync(session, c => c.Id == model.Interval.Id
+                    replaceResult = await _context.Interval.ReplaceOneAsync( c => c.Id == model.Interval.Id
                                                                     && c.Version == version, loadedInstance,
                                                                     new ReplaceOptions { IsUpsert = false });
                     if (replaceResult.ModifiedCount != 1)
@@ -100,7 +137,7 @@ namespace Services.Core
                     Examination newModel = _mapper.Map<ExaminationCreateModel, Examination>(model);
                     newModel.BookedByUser = username;
                     newModel.Status = BookingStatus.UNFINISHED;
-                    await _context.Examinations.InsertOneAsync(session, newModel);
+                    await _context.Examinations.InsertOneAsync( newModel);
                     
                     // đồng bộ với Schedule
                     var syncModel = new IntervalSyncModel()
@@ -117,11 +154,11 @@ namespace Services.Core
 
                     result.Data = _mapper.Map<Examination, ExaminationViewModel>(newModel);
                     result.Succeed = true;
-                    await session.CommitTransactionAsync();
+ //                   await session.CommitTransactionAsync();
                 }
                 catch (Exception e)
                 {
-                    await session.AbortTransactionAsync();
+ //                   await session.AbortTransactionAsync();
                     // Fail vì 1 lý do gì đó, nhưng schedule đã thay đổi trạng thái thành công -> thay đổi trạng thái của schedule về như cũ
                     if (syncResult.Succeed)
                     {
@@ -216,12 +253,14 @@ namespace Services.Core
             return result;
         }
 
+       
+
         public async Task<ResultModel> Update(ExaminationUpdateModel model)
         {
             var result = new ResultModel();
-            using (var session = _context.StartSession())
+ //           using (var session = _context.StartSession())
             {
-                session.StartTransaction();
+ //               session.StartTransaction();
 
                 try
                 {
@@ -236,8 +275,9 @@ namespace Services.Core
                         update = update.Set(mt => mt.Note, model.Note);
                     }
 
+
                     // execute statement
-                    await _context.Examinations.UpdateOneAsync(session, filter, update);
+                    await _context.Examinations.UpdateOneAsync( filter, update);
                     var modelUpdated = _context.Examinations.Find(filter).FirstOrDefault();
 
                     // try sync interval
@@ -275,11 +315,11 @@ namespace Services.Core
                     result.Data = _mapper.Map<Examination, ExaminationViewModel>(modelUpdated);
                     result.Succeed = true;
                     // commit transaction if status not canceled
-                    session.CommitTransaction();
+ //                   session.CommitTransaction();
                 }
                 catch (Exception e)
                 {
-                    session.AbortTransaction();
+ //                   session.AbortTransaction();
                     result.Succeed = false;
                     result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
                 }

@@ -31,7 +31,10 @@ namespace Data.MongoCollections
         public string Result { get; set; }
         public ExitInformation ExitInformation { get; set; }
         public bool HasFile { get; set; }
+
         public string Rate { get; set; }
+      
+
     }
 
     public class ExitInformation
@@ -39,5 +42,13 @@ namespace Data.MongoCollections
         public string Destination { get; set; }
         public DateTime ExitingDate { get; set; }
         public DateTime EntryingDate { get; set; }
+    }
+
+    public class RatingExamination
+    {
+        public string Rating { get; set; }
+        public string RatingType { get; set; }
+        public string Desc { get; set; }
+
     }
 }

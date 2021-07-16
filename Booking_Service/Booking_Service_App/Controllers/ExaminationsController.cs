@@ -235,5 +235,19 @@ namespace Booking_Service_App.Controllers
             }
             return BadRequest(result.ErrorMessage);
         }
+
+        [HttpGet("TestRabit")]
+        [AllowAnonymous]
+        public IActionResult TestRabbit(Guid id)
+        {
+            var result =  _examService.TestRabit(id);
+            if (result.Succeed)
+            {
+                return Ok(result.Data);
+            }
+            return BadRequest(result.ErrorMessage);
+        }
+
+
     }
 }

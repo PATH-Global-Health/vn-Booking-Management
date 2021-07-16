@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Constants\RabbitQueue.cs~RF2a68e20f.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="DataAccess\" />
   </ItemGroup>
   <ItemGroup>
