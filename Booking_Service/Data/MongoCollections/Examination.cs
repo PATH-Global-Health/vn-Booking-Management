@@ -31,6 +31,7 @@ namespace Data.MongoCollections
         public string Result { get; set; }
         public ExitInformation ExitInformation { get; set; }
         public bool HasFile { get; set; }
+        public string Rate { get; set; }
     }
 
     public class ExitInformation

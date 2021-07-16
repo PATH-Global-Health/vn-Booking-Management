@@ -45,6 +45,8 @@ namespace Data.ViewModels
         [Required]
         public int Status { get; set; }
         public string Note { get; set; }
+
+        public string Rate { get; set; }
     }
 
     public class ExaminationUpdateResultModel
