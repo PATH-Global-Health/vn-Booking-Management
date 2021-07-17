@@ -27,7 +27,7 @@ namespace Data.ViewModels
         [Required]
         public ExitInformationModel ExitInformation { get; set; }
 
-        public string Rate { get; set; }
+       
 
     }
 
@@ -40,7 +40,7 @@ namespace Data.ViewModels
         public string Result { get; set; }
         public bool HasFile { get; set; }
 
-        public string Rating { get; set; }
+        public string Rate { get; set; }
         public string TypeRating { get; set; }
         public string Desc { get; set; }
 
@@ -59,6 +59,28 @@ namespace Data.ViewModels
         public string Desc { get; set; }
 
     }
+
+    public class ExaminationDeleteModel
+    {
+        [Required]
+        public Guid Id { get; set; }
+        [Required]
+        public int Status { get; set; }
+
+    }
+
+    public class ExaminationRatingModel
+    {
+        [Required]
+        public Guid Id { get; set; }
+        [Required]
+        public string Rate { get; set; }
+        public string TypeRating { get; set; }
+        public string Desc { get; set; }
+
+    }
+
+
 
     public class ExaminationUpdateResultModel
     {

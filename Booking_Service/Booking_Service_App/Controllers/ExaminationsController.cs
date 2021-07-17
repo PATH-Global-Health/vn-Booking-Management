@@ -131,6 +131,25 @@ namespace Booking_Service_App.Controllers
             }
         }
 
+        [HttpDelete]
+        public async Task<IActionResult> Delete([FromBody] ExaminationDeleteModel model)
+        {
+            try
+            {
+                var username = User.Claims.GetUsername();
+                var result = await _examService.Delete(model);
+                if (result.Succeed)
+                {
+                    return Ok(result);
+                }
+                return BadRequest(result.ErrorMessage);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -210,6 +229,25 @@ namespace Booking_Service_App.Controllers
                 return File(fileBytes, "application/pdf", $"result.pdf");
             }
             return BadRequest(result.ErrorMessage);
+        }
+
+        [HttpPut("Rating")]
+        public async Task<IActionResult> ExaminationRating(ExaminationRatingModel model)
+        {
+            try
+            {
+                var username = User.Claims.GetUsername();
+                var result = await _examService.Rating(model);
+                if (result.Succeed)
+                {
+                    return Ok(result);
+                }
+                return BadRequest(result.ErrorMessage);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         //[HttpGet("UpdateDB")]

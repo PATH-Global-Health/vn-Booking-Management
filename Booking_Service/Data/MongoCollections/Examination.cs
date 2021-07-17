@@ -33,6 +33,9 @@ namespace Data.MongoCollections
         public bool HasFile { get; set; }
 
         public string Rate { get; set; }
+
+        public string TypeRating { get; set; }
+        public string Desc { get; set; }
       
 
     }

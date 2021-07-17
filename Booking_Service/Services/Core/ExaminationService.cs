@@ -24,6 +24,10 @@ namespace Services.Core
         Task<ResultModel> Get(Guid hospitalId, int? status = null, DateTime? from = null, DateTime? to = null);
         Task<ResultModel> Update(ExaminationUpdateModel model);
 
+        Task<ResultModel> Delete(ExaminationDeleteModel model);
+
+        Task<ResultModel> Rating(ExaminationRatingModel model);
+
         Task<ResultModel> UpdateResult(ExaminationUpdateResultModel model);
         Task<ResultModel> GetByCustomer(string username);
         Task<ResultModel> GetById(Guid id);
@@ -274,6 +278,18 @@ namespace Services.Core
                     {
                         update = update.Set(mt => mt.Note, model.Note);
                     }
+                    if (!string.IsNullOrEmpty(model.Rate))
+                    {
+                        update = update.Set(mt => mt.Rate, model.Rate);
+                    }
+                    if (!string.IsNullOrEmpty(model.TypeRating))
+                    {
+                        update = update.Set(mt => mt.TypeRating, model.TypeRating);
+                    }
+                    if (!string.IsNullOrEmpty(model.Desc))
+                    {
+                        update = update.Set(mt => mt.Desc, model.Desc);
+                    }
 
 
                     // execute statement
@@ -320,6 +336,116 @@ namespace Services.Core
                 catch (Exception e)
                 {
  //                   session.AbortTransaction();
+                    result.Succeed = false;
+                    result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+                }
+            }
+            return result;
+        }
+
+        public async Task<ResultModel> Delete(ExaminationDeleteModel model)
+        {
+            var result = new ResultModel();
+            //           using (var session = _context.StartSession())
+            {
+                //               session.StartTransaction();
+                try
+                {
+                    // filter by Id
+                    var filter = Builders<Examination>.Filter.Eq(mt => mt.Id, model.Id);
+                    // update status
+                    var update = Builders<Examination>.Update.Set(mt => mt.Status, (BookingStatus)model.Status);
+
+                    // update note if any
+
+                    // execute statement
+                    await _context.Examinations.UpdateOneAsync(filter, update);
+                    var modelUpdated = _context.Examinations.Find(filter).FirstOrDefault();
+
+                    // try sync interval
+                    if (model.Status == (int)BookingStatus.CANCELED || model.Status == (int)BookingStatus.DOCTOR_CANCEL)
+                    {
+                        // create an instanceSync model 
+                        var syncModel = new IntervalSyncModel()
+                        {
+                            Id = modelUpdated.Interval.Id,
+                            IsAvailable = true,
+                        };
+                        // sync instance with schedule module
+                        var syncResponse = SyncInterval(syncModel);
+                        var syncResult = JsonConvert.DeserializeObject<ResultModel>(syncResponse);
+
+                        if (!syncResult.Succeed)
+                        {
+                            // throw if fail to sync
+                            throw new Exception("Không thể đồng bộ với Shedule-Service: " + syncResult.ErrorMessage);
+                        }
+
+                        if (modelUpdated.Unit.Username.Contains("hcdc."))
+                        {
+                            // create an exam cancel booking model
+                            var cancelModel = new CancelBookingExamModel()
+                            {
+                                BookingExamId = modelUpdated.Id,
+                                PersonId = modelUpdated.Customer.Id,
+                                IntervalId = modelUpdated.Interval.Id,
+                                Status = model.Status
+                            };
+                        }
+                    }
+
+                    result.Data = _mapper.Map<Examination, ExaminationViewModel>(modelUpdated);
+                    result.Succeed = true;
+                    // commit transaction if status not canceled
+                    //                   session.CommitTransaction();
+                }
+                catch (Exception e)
+                {
+                    //                   session.AbortTransaction();
+                    result.Succeed = false;
+                    result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+                }
+            }
+            return result;
+        }
+
+        public async Task<ResultModel> Rating(ExaminationRatingModel model)
+        {
+            var result = new ResultModel();
+            //           using (var session = _context.StartSession())
+            {
+                //               session.StartTransaction();
+
+                try
+                {
+                    // filter by Id
+                    var filter = Builders<Examination>.Filter.Eq(mt => mt.Id, model.Id);
+                    // update status
+                    var update = Builders<Examination>.Update.Set(mt => mt.Rate, model.Rate);
+
+                    // update note if any
+                    if (!string.IsNullOrEmpty(model.TypeRating))
+                    {
+                        update = update.Set(mt => mt.TypeRating, model.TypeRating);
+                    }
+                    if (!string.IsNullOrEmpty(model.Desc))
+                    {
+                        update = update.Set(mt => mt.Desc, model.Desc);
+                    }
+
+                    // execute statement
+                    await _context.Examinations.UpdateOneAsync(filter, update);
+                    var modelUpdated = _context.Examinations.Find(filter).FirstOrDefault();
+
+
+                    result.Data = _mapper.Map<Examination, ExaminationViewModel>(modelUpdated);
+                    result.Succeed = true;
+                    // commit transaction if status not canceled
+                    //                   session.CommitTransaction();
+                }
+                catch (Exception e)
+                {
+                    //                   session.AbortTransaction();
                     result.Succeed = false;
                     result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
                 }
