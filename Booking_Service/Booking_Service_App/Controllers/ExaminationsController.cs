@@ -276,9 +276,9 @@ namespace Booking_Service_App.Controllers
 
         [HttpGet("TestRabit")]
         [AllowAnonymous]
-        public IActionResult TestRabbit(Guid id)
+        public IActionResult TestRabbit([FromBody] ExamModel model)
         {
-            var result =  _examService.TestRabit(id);
+            var result =  _examService.TestRabit(model);
             if (result.Succeed)
             {
                 return Ok(result.Data);

@@ -3,6 +3,10 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Controllers\ExaminationsController.cs~RF110acb.TMP" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Data\Data.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>

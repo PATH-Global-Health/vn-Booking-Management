@@ -110,5 +110,18 @@ namespace Data.ViewModels
 
     }
 
+    public class ExamModel
+    {
+        public string Rating { get; set; }
+        public string RatingType { get; set; }
+        [Required]
+        public RatingExaminationModel RatingExaminationModel { get; set; }
+
+
+
+    }
+
+
+
 
 }

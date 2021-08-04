@@ -36,7 +36,7 @@ namespace Services.Core
         Task<ResultModel> UpdateResultForm(FormFileUpdateModel model);
         Task<ResultModel> Statistic(Guid unitId, DateTime? from = null, DateTime? to = null);
 
-        ResultModel TestRabit(Guid intervalId);
+        ResultModel TestRabit(Object Model);
 
 
     }
@@ -54,27 +54,16 @@ namespace Services.Core
             _producer = producer;
         }
 
-        public ResultModel TestRabit(Guid intervalId)
+        public ResultModel TestRabit(Object model)
         {
             var result = new ResultModel();
             ResultModel syncResult = new ResultModel();
 
             try
             {
-                var syncModel = new IntervalSyncModel()
-                {
-                    Id = intervalId,
-                    IsAvailable = false,
-                };
-                var syncResponse = SyncInterval(syncModel);
-                syncResult = JsonConvert.DeserializeObject<ResultModel>(syncResponse);
 
-                if (!syncResult.Succeed)
-                {
-                    throw new Exception(syncResult.ErrorMessage);
-                }
 
-                result.Data = syncResult.Data;
+                result.Data = model;
                 result.Succeed = true;
 
             }
@@ -467,9 +456,9 @@ namespace Services.Core
         public async Task<ResultModel> CreateResultForm(FormFileCreateModel model)
         {
             var result = new ResultModel();
-            using (var session = _context.StartSession())
+  //          using (var session = _context.StartSession())
             {
-                session.StartTransaction();
+ //               session.StartTransaction();
                 try
                 {
                     var fileExist = await _context.ResultForm.FindAsync(_ => _.ExamId == model.ExamId);
@@ -498,7 +487,7 @@ namespace Services.Core
                             Data = fileBytes,
                             ExamId = model.ExamId
                         };
-                        await _context.ResultForm.InsertOneAsync(session, form);
+                        await _context.ResultForm.InsertOneAsync( form);
 
                         // filter by Id
                         var filter = Builders<Examination>.Filter.Eq(mt => mt.Id, model.ExamId);
@@ -509,15 +498,15 @@ namespace Services.Core
                         update = update.Set(mt => mt.Status, BookingStatus.RESULTED);
 
                         // execute statement
-                        await _context.Examinations.UpdateOneAsync(session, filter, update);
-                        await session.CommitTransactionAsync();
+                        await _context.Examinations.UpdateOneAsync( filter, update);
+ //                       await session.CommitTransactionAsync();
                     }
 
                     result.Succeed = true;
                 }
                 catch (Exception e)
                 {
-                    await session.AbortTransactionAsync();
+   //                 await session.AbortTransactionAsync();
                     result.Succeed = false;
                     result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
                 }
@@ -528,9 +517,9 @@ namespace Services.Core
         public async Task<ResultModel> UpdateResultForm(FormFileUpdateModel model)
         {
             var result = new ResultModel();
-            using (var session = _context.StartSession())
+//            using (var session = _context.StartSession())
             {
-                session.StartTransaction();
+   //             session.StartTransaction();
                 try
                 {
                     bool isExist = false;
@@ -566,20 +555,20 @@ namespace Services.Core
                             var filter = Builders<ResultForm>.Filter.Eq(mt => mt.ExamId, model.ExamId);
                             // update status
                             var update = Builders<ResultForm>.Update.Set(mt => mt.Data, fileBytes);
-                            await _context.ResultForm.UpdateOneAsync(session, filter, update);
+                            await _context.ResultForm.UpdateOneAsync( filter, update);
                         }
                         else
                         {
-                            await _context.ResultForm.InsertOneAsync(session, form);
+                            await _context.ResultForm.InsertOneAsync( form);
                         }
                     }
 
-                    await session.CommitTransactionAsync();
+                   // await session.CommitTransactionAsync();
                     result.Succeed = true;
                 }
                 catch (Exception e)
                 {
-                    await session.AbortTransactionAsync();
+                    //await session.AbortTransactionAsync();
                     result.Succeed = false;
                     result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
                 }
