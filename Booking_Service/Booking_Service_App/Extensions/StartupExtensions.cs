@@ -53,6 +53,8 @@ namespace Booking_Service_App.Extensions
         public static void AddBusinessServices(this IServiceCollection services)
         {
             services.AddScoped<IExaminationService, ExaminationService>();
+            services.AddScoped<IExcelService, ExcelService>();
+
             services.AddScoped<IProducerMQ, Producer>();
         }
     }

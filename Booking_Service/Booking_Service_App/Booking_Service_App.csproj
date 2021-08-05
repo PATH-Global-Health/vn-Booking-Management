@@ -7,6 +7,10 @@
   <ItemGroup>
     <None Remove="Controllers\ExaminationsController.cs~RF110acb.TMP" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Properties\PublishProfiles\FolderProfile.pubxml.user" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Data\Data.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>

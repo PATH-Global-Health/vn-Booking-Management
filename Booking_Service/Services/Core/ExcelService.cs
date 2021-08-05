@@ -20,8 +20,8 @@ namespace Services.Core
     {
         Task<ResultModel> ExamReport(Guid unitId, DateTime dateTaken);
         Task<ResultModel> AvailableDatesForExamReport(Guid unitId);
-        Task<ResultModel> VaccReport(Guid unitId, DateTime fromDate, DateTime toDate);
-        Task<ResultModel> AvailableDatesForVaccReport(Guid unitId);
+//        Task<ResultModel> VaccReport(Guid unitId, DateTime fromDate, DateTime toDate);
+//        Task<ResultModel> AvailableDatesForVaccReport(Guid unitId);
     }
     public class ExcelService : IExcelService
     {
@@ -54,27 +54,27 @@ namespace Services.Core
             return result;
         }
 
-        public async Task<ResultModel> AvailableDatesForVaccReport(Guid unitId)
-        {
-            var result = new ResultModel();
-            try
-            {
-                var basefilter = Builders<Vaccination>.Filter.Empty;
-                var hospitalIdFilter = Builders<Vaccination>.Filter.Eq(mt => mt.Unit.Id, unitId);
-                basefilter = basefilter & hospitalIdFilter;
-
-                var query = await _dbContext.Vaccinations.Find(basefilter).Project(e => e.Date).ToListAsync();
-                var distincted = query.Select(q => q.Date).Distinct();
-                result.Data = distincted;
-                result.Succeed = true;
-            }
-            catch (Exception e)
-            {
-                result.Succeed = false;
-                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message : e.Message;
-            }
-            return result;
-        }
+//        public async Task<ResultModel> AvailableDatesForVaccReport(Guid unitId)
+//        {
+//            var result = new ResultModel();
+//            try
+//            {
+//                var basefilter = Builders<Vaccination>.Filter.Empty;
+//                var hospitalIdFilter = Builders<Vaccination>.Filter.Eq(mt => mt.Unit.Id, unitId);
+//                basefilter = basefilter & hospitalIdFilter;
+//
+//                var query = await _dbContext.Vaccinations.Find(basefilter).Project(e => e.Date).ToListAsync();
+//                var distincted = query.Select(q => q.Date).Distinct();
+//                result.Data = distincted;
+//                result.Succeed = true;
+//            }
+//            catch (Exception e)
+//            {
+//                result.Succeed = false;
+//                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message : e.Message;
+//            }
+//            return result;
+//        }
 
         public async Task<ResultModel> ExamReport(Guid unitId, DateTime dateTaken)
         {
@@ -366,301 +366,301 @@ namespace Services.Core
             return result;
         }
 
-        public async Task<ResultModel> VaccReport(Guid unitId, DateTime fromDate, DateTime toDate)
-        {
-            var result = new ResultModel();
-            try
-            {
-                var basefilter = Builders<Vaccination>.Filter.Empty;
-                var hospitalIdFilter = Builders<Vaccination>.Filter.Eq(mt => mt.Unit.Id, unitId);
-                basefilter = basefilter & hospitalIdFilter;
-                var dateFilter = Builders<Vaccination>.Filter.Where(mt => mt.Date >= fromDate.Date && mt.Date <= toDate.Date);
-                basefilter = basefilter & dateFilter;
-                var query = await _dbContext.Vaccinations.FindAsync(basefilter);
-                var rs = await query.ToListAsync();
-                if (rs.Count == 0)
-                {
-                    throw new Exception("Không có mẫu.");
-                }
-                var unit = rs.FirstOrDefault().Unit;
-                using (var ms = new MemoryStream())
-                {
-
-                    IWorkbook workbook = new XSSFWorkbook();
-                    ISheet excelSheet = workbook.CreateSheet("Danh sach tc");
-
-                    #region Styling
-                    // Fonts
-                    // boldFont
-                    IFont boldFont = workbook.CreateFont();
-                    boldFont.IsBold = true;
-                    boldFont.FontHeightInPoints = 13;
-                    // table header font
-                    IFont tableHeaderFont = workbook.CreateFont();
-                    tableHeaderFont.IsBold = true;
-                    tableHeaderFont.FontHeightInPoints = 11;
-                    // CellStyles
-                    // normal left align cell
-                    ICellStyle leftCellStyle = workbook.CreateCellStyle();
-                    leftCellStyle.Alignment = HorizontalAlignment.Left;
-                    // normal center cell
-                    ICellStyle centerCellStyle = workbook.CreateCellStyle();
-                    centerCellStyle.Alignment = HorizontalAlignment.Center;
-                    // bold center cell
-                    ICellStyle centerBoldCellStyle = workbook.CreateCellStyle();
-                    centerBoldCellStyle.Alignment = HorizontalAlignment.Center;
-                    centerBoldCellStyle.SetFont(boldFont);
-                    // table header cell style
-                    ICellStyle tableHeaderStyle = workbook.CreateCellStyle();
-                    tableHeaderStyle.Alignment = HorizontalAlignment.Center;
-                    tableHeaderStyle.VerticalAlignment = VerticalAlignment.Center;
-                    tableHeaderStyle.SetFont(tableHeaderFont);
-                    tableHeaderStyle.BorderTop = BorderStyle.Thin;
-                    tableHeaderStyle.BorderBottom = BorderStyle.Thin;
-                    tableHeaderStyle.BorderRight = BorderStyle.Thin;
-                    tableHeaderStyle.BorderLeft = BorderStyle.Thin;
-                    tableHeaderStyle.WrapText = true;
-                    // table data style
-                    ICellStyle tableDataStyle = workbook.CreateCellStyle();
-                    tableDataStyle.Alignment = HorizontalAlignment.Center;
-                    tableDataStyle.VerticalAlignment = VerticalAlignment.Center;
-                    tableDataStyle.BorderTop = BorderStyle.Thin;
-                    tableDataStyle.BorderBottom = BorderStyle.Thin;
-                    tableDataStyle.BorderRight = BorderStyle.Thin;
-                    tableDataStyle.BorderLeft = BorderStyle.Thin;
-                    tableDataStyle.WrapText = true;
-                    #endregion
-
-                    #region Header
-                    int rowIndex = 0;
-                    IRow row = excelSheet.CreateRow(rowIndex++);
-                    ICell cell = row.CreateCell(2);
-                    cell.CellStyle = centerCellStyle;
-                    cell.SetCellValue(unit.Name);
-                    //
-                    row = excelSheet.CreateRow(rowIndex++);
-                    cell = row.CreateCell(2);
-                    cell.CellStyle = centerBoldCellStyle;
-                    //cell.SetCellValue(unit.);
-                    #endregion
-
-                    #region Title
-                    // add blank row
-                    rowIndex++;
-                    //
-                    row = excelSheet.CreateRow(rowIndex++);
-                    cell = row.CreateCell(2);
-                    cell.CellStyle = centerBoldCellStyle;
-                    cell.SetCellValue("DANH SÁCH TIÊM CHỦNG");
-                    //
-                    row = excelSheet.CreateRow(rowIndex++);
-                    cell = row.CreateCell(2);
-                    cell.CellStyle = centerCellStyle;
-                    cell.SetCellValue("ĐỊA ĐIỂM TIÊM: " + unit.Address);
-                    #endregion
-
-                    #region Common Info
-                    // add blank row
-                    rowIndex++;
-                    //
-                    row = excelSheet.CreateRow(rowIndex++);
-                    cell = row.CreateCell(0);
-                    cell.CellStyle = leftCellStyle;
-                    cell.SetCellValue("Từ ngày: " + fromDate.ToString("dd/MM/yyyy"));
-                    cell = row.CreateCell(3);
-                    cell.CellStyle = leftCellStyle;
-                    cell.SetCellValue("Tới ngày: " + toDate.ToString("dd/MM/yyyy"));
-                    #endregion
-
-                    #region Table Header
-                    // Header
-                    row = excelSheet.CreateRow(rowIndex++);
-                    row = excelSheet.CreateRow(rowIndex++);
-                    int cellIndex = 0;
-                    // TT
-                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
-                    cell = row.CreateCell(cellIndex++);
-                    cell.SetCellValue("STT");
-                    cell.CellStyle = tableHeaderStyle;
-                    // Mã phiếu hẹn
-                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
-                    cell = row.CreateCell(cellIndex++);
-                    cell.SetCellValue("Mã phiếu hẹn");
-                    cell.CellStyle = tableHeaderStyle;
-                    // Họ tên
-                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
-                    cell = row.CreateCell(cellIndex++);
-                    cell.SetCellValue("Họ tên");
-                    cell.CellStyle = tableHeaderStyle;
-                    // Ngày tháng năm sinh
-                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, cellIndex, cellIndex + 1));
-                    cell = row.CreateCell(cellIndex++);
-                    cell.SetCellValue("Ngày tháng năm sinh");
-                    cell.CellStyle = tableHeaderStyle;
-                    cell = row.CreateCell(cellIndex++);
-                    cell.CellStyle = tableHeaderStyle;
-                    // Mã tiêm chủng
-                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
-                    cell = row.CreateCell(cellIndex++);
-                    cell.SetCellValue("Mã tiêm chủng");
-                    cell.CellStyle = tableHeaderStyle;
-                    // Địa chỉ 
-                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
-                    cell = row.CreateCell(cellIndex++);
-                    cell.SetCellValue("Địa chỉ");
-                    cell.CellStyle = tableHeaderStyle;
-                    // Họ tên người đi cùng
-                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
-                    cell = row.CreateCell(cellIndex++);
-                    cell.SetCellValue("Họ tên người đi cùng");
-                    cell.CellStyle = tableHeaderStyle;
-                    // Mối quan hệ
-                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
-                    cell = row.CreateCell(cellIndex++);
-                    cell.SetCellValue("Mối quan hệ");
-                    cell.CellStyle = tableHeaderStyle;
-                    // SĐT
-                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
-                    cell = row.CreateCell(cellIndex++);
-                    cell.SetCellValue("SĐT");
-                    cell.CellStyle = tableHeaderStyle;
-                    // Mũi tiêm
-                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
-                    cell = row.CreateCell(cellIndex++);
-                    cell.SetCellValue("Mũi tiêm");
-                    cell.CellStyle = tableHeaderStyle;
-                    // Ngày tiêm
-                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
-                    cell = row.CreateCell(cellIndex++);
-                    cell.SetCellValue("Ngày tiêm");
-                    cell.CellStyle = tableHeaderStyle;
-                    // Loại hình
-                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
-                    cell = row.CreateCell(cellIndex++);
-                    cell.SetCellValue("Loại hình");
-                    cell.CellStyle = tableHeaderStyle;
-                    //
-                    row = excelSheet.CreateRow(rowIndex++);
-                    for (int i = 0; i < 12; i++)
-                    {
-                        cell = row.CreateCell(i);
-                        cell.CellStyle = tableHeaderStyle;
-                        if (i == 3)
-                            cell.SetCellValue("Nam");
-                        if (i == 4)
-                            cell.SetCellValue("Nữ");
-                    }
-                    #endregion
-
-                    #region Table Data
-                    int stt = 0;
-                    foreach (var item in rs.ToList())
-                    {
-                        stt++;
-                        int dataIndex = 0;
-                        row = excelSheet.CreateRow(rowIndex++);
-                        // Stt
-                        cell = row.CreateCell(dataIndex++);
-                        cell.SetCellValue(stt);
-                        cell.CellStyle = tableDataStyle;
-                        // Id
-                        cell = row.CreateCell(dataIndex++);
-                        cell.SetCellValue(item.Interval.NumId);
-                        cell.CellStyle = tableDataStyle;
-                        // Họ tên
-                        cell = row.CreateCell(dataIndex++);
-                        cell.SetCellValue(item.Customer.Fullname);
-                        cell.CellStyle = tableDataStyle;
-                        // Nam/Nữ Năm sinh
-                        if (item != null && item.Customer != null)
-                        {
-                            // Nam
-                            cell = row.CreateCell(dataIndex++);
-                            cell.CellStyle = tableDataStyle;
-                            cell.SetCellValue(item.Customer.Gender == true ? item.Customer.BirthDate.ToString("dd/MM/yyyy") : "");
-                            // Nữ
-                            cell = row.CreateCell(dataIndex++);
-                            cell.CellStyle = tableDataStyle;
-                            cell.SetCellValue(item.Customer.Gender == false ? item.Customer.BirthDate.ToString("dd/MM/yyyy") : "");
-                        }
-                        // Mã tiêm chủng
-                        cell = row.CreateCell(dataIndex++);
-                        cell.SetCellValue(item.Customer.VaccinationCode);
-                        cell.CellStyle = tableDataStyle;
-                        // Địa chỉ tại VN
-                        cell = row.CreateCell(dataIndex++);
-                        cell.SetCellValue(item.Customer.GetFullAddress());
-                        cell.CellStyle = tableDataStyle;
-                        // Họ tên người đi cùng
-                        cell = row.CreateCell(dataIndex++);
-                        cell.SetCellValue(item.Contacts.FirstOrDefault() != null ? item.Contacts.FirstOrDefault().Fullname : null);
-                        cell.CellStyle = tableDataStyle;
-                        // Mối quan hệ
-                        cell = row.CreateCell(dataIndex++);
-                        cell.SetCellValue(item.Contacts.FirstOrDefault() != null ? item.Contacts.FirstOrDefault().Relationship : null);
-                        cell.CellStyle = tableDataStyle;
-                        // SĐT
-                        cell = row.CreateCell(dataIndex++);
-                        cell.SetCellValue(item.Customer.Phone);
-                        cell.CellStyle = tableDataStyle;
-                        // Mũi tiêm
-                        cell = row.CreateCell(dataIndex++);
-                        cell.SetCellValue(item.Service.Name);
-                        cell.CellStyle = tableDataStyle;
-                        // Ngày tiêm
-                        cell = row.CreateCell(dataIndex++);
-                        cell.SetCellValue(item.Date.ToString("dd/MM/yyyy"));
-                        cell.CellStyle = tableDataStyle;
-                        // Loại hình
-                        cell = row.CreateCell(dataIndex++);
-                        cell.SetCellValue(item.ServiceType != null ? item.ServiceType.Name : null);
-                        cell.CellStyle = tableDataStyle;
-                    }
-                    #endregion
-                    // sizing
-                    cellIndex = 0;
-                    // STT
-                    excelSheet.SetColumnWidth(cellIndex++, 256 * 5);
-                    // Id
-                    excelSheet.SetColumnWidth(cellIndex++, 256 * 5);
-                    // Họ tên
-                    excelSheet.SetColumnWidth(cellIndex++, 256 * 25);
-                    // Nam
-                    excelSheet.SetColumnWidth(cellIndex++, 256 * 15);
-                    // Nữ
-                    excelSheet.SetColumnWidth(cellIndex++, 256 * 15);
-                    // mã tiêm
-                    excelSheet.SetColumnWidth(cellIndex++, 256 * 15);
-                    // Địa chỉ tại VN
-                    excelSheet.SetColumnWidth(cellIndex++, 256 * 30);
-                    // Họ tên
-                    excelSheet.SetColumnWidth(cellIndex++, 256 * 25);
-                    // MQH
-                    excelSheet.SetColumnWidth(cellIndex++, 256 * 15);
-                    // SDT
-                    excelSheet.SetColumnWidth(cellIndex++, 256 * 20);
-                    // Mũi tiêm
-                    excelSheet.SetColumnWidth(cellIndex++, 256 * 30);
-                    // Ngày tiêm
-                    excelSheet.SetColumnWidth(cellIndex++, 256 * 25);
-                    // Loại hình
-                    excelSheet.SetColumnWidth(cellIndex++, 256 * 30);
-                    //
-                    workbook.Write(ms);
-                    return new ResultModel()
-                    {
-                        Succeed = true,
-                        Data = ms.ToArray(),
-                    };
-                }
-            }
-            catch (Exception e)
-            {
-                result.Succeed = false;
-                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message : e.Message;
-                result.ErrorMessage += Environment.NewLine + "StackTrace:" + e.StackTrace;
-            }
-            return result;
-        }
+//        public async Task<ResultModel> VaccReport(Guid unitId, DateTime fromDate, DateTime toDate)
+//        {
+//            var result = new ResultModel();
+//            try
+//            {
+//                var basefilter = Builders<Vaccination>.Filter.Empty;
+//                var hospitalIdFilter = Builders<Vaccination>.Filter.Eq(mt => mt.Unit.Id, unitId);
+//                basefilter = basefilter & hospitalIdFilter;
+//                var dateFilter = Builders<Vaccination>.Filter.Where(mt => mt.Date >= fromDate.Date && mt.Date <= toDate.Date);
+//                basefilter = basefilter & dateFilter;
+//                var query = await _dbContext.Vaccinations.FindAsync(basefilter);
+//                var rs = await query.ToListAsync();
+//                if (rs.Count == 0)
+//                {
+//                    throw new Exception("Không có mẫu.");
+//                }
+//                var unit = rs.FirstOrDefault().Unit;
+//                using (var ms = new MemoryStream())
+//                {
+//
+//                    IWorkbook workbook = new XSSFWorkbook();
+//                    ISheet excelSheet = workbook.CreateSheet("Danh sach tc");
+//
+//                    #region Styling
+//                    // Fonts
+//                    // boldFont
+//                    IFont boldFont = workbook.CreateFont();
+//                    boldFont.IsBold = true;
+//                    boldFont.FontHeightInPoints = 13;
+//                    // table header font
+//                    IFont tableHeaderFont = workbook.CreateFont();
+//                    tableHeaderFont.IsBold = true;
+//                    tableHeaderFont.FontHeightInPoints = 11;
+//                    // CellStyles
+//                    // normal left align cell
+//                    ICellStyle leftCellStyle = workbook.CreateCellStyle();
+//                    leftCellStyle.Alignment = HorizontalAlignment.Left;
+//                    // normal center cell
+//                    ICellStyle centerCellStyle = workbook.CreateCellStyle();
+//                    centerCellStyle.Alignment = HorizontalAlignment.Center;
+//                    // bold center cell
+//                    ICellStyle centerBoldCellStyle = workbook.CreateCellStyle();
+//                    centerBoldCellStyle.Alignment = HorizontalAlignment.Center;
+//                    centerBoldCellStyle.SetFont(boldFont);
+//                    // table header cell style
+//                    ICellStyle tableHeaderStyle = workbook.CreateCellStyle();
+//                    tableHeaderStyle.Alignment = HorizontalAlignment.Center;
+//                    tableHeaderStyle.VerticalAlignment = VerticalAlignment.Center;
+//                    tableHeaderStyle.SetFont(tableHeaderFont);
+//                    tableHeaderStyle.BorderTop = BorderStyle.Thin;
+//                    tableHeaderStyle.BorderBottom = BorderStyle.Thin;
+//                    tableHeaderStyle.BorderRight = BorderStyle.Thin;
+//                    tableHeaderStyle.BorderLeft = BorderStyle.Thin;
+//                    tableHeaderStyle.WrapText = true;
+//                    // table data style
+//                    ICellStyle tableDataStyle = workbook.CreateCellStyle();
+//                    tableDataStyle.Alignment = HorizontalAlignment.Center;
+//                    tableDataStyle.VerticalAlignment = VerticalAlignment.Center;
+//                    tableDataStyle.BorderTop = BorderStyle.Thin;
+//                    tableDataStyle.BorderBottom = BorderStyle.Thin;
+//                    tableDataStyle.BorderRight = BorderStyle.Thin;
+//                    tableDataStyle.BorderLeft = BorderStyle.Thin;
+//                    tableDataStyle.WrapText = true;
+//                    #endregion
+//
+//                    #region Header
+//                    int rowIndex = 0;
+//                    IRow row = excelSheet.CreateRow(rowIndex++);
+//                    ICell cell = row.CreateCell(2);
+//                    cell.CellStyle = centerCellStyle;
+//                    cell.SetCellValue(unit.Name);
+//                    //
+//                    row = excelSheet.CreateRow(rowIndex++);
+//                    cell = row.CreateCell(2);
+//                    cell.CellStyle = centerBoldCellStyle;
+//                    //cell.SetCellValue(unit.);
+//                    #endregion
+//
+//                    #region Title
+//                    // add blank row
+//                    rowIndex++;
+//                    //
+//                    row = excelSheet.CreateRow(rowIndex++);
+//                    cell = row.CreateCell(2);
+//                    cell.CellStyle = centerBoldCellStyle;
+//                    cell.SetCellValue("DANH SÁCH TIÊM CHỦNG");
+//                    //
+//                    row = excelSheet.CreateRow(rowIndex++);
+//                    cell = row.CreateCell(2);
+//                    cell.CellStyle = centerCellStyle;
+//                    cell.SetCellValue("ĐỊA ĐIỂM TIÊM: " + unit.Address);
+//                    #endregion
+//
+//                    #region Common Info
+//                    // add blank row
+//                    rowIndex++;
+//                    //
+//                    row = excelSheet.CreateRow(rowIndex++);
+//                    cell = row.CreateCell(0);
+//                    cell.CellStyle = leftCellStyle;
+//                    cell.SetCellValue("Từ ngày: " + fromDate.ToString("dd/MM/yyyy"));
+//                    cell = row.CreateCell(3);
+//                    cell.CellStyle = leftCellStyle;
+//                    cell.SetCellValue("Tới ngày: " + toDate.ToString("dd/MM/yyyy"));
+//                    #endregion
+//
+//                    #region Table Header
+//                    // Header
+//                    row = excelSheet.CreateRow(rowIndex++);
+//                    row = excelSheet.CreateRow(rowIndex++);
+//                    int cellIndex = 0;
+//                    // TT
+//                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
+//                    cell = row.CreateCell(cellIndex++);
+//                    cell.SetCellValue("STT");
+//                    cell.CellStyle = tableHeaderStyle;
+//                    // Mã phiếu hẹn
+//                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
+//                    cell = row.CreateCell(cellIndex++);
+//                    cell.SetCellValue("Mã phiếu hẹn");
+//                    cell.CellStyle = tableHeaderStyle;
+//                    // Họ tên
+//                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
+//                    cell = row.CreateCell(cellIndex++);
+//                    cell.SetCellValue("Họ tên");
+//                    cell.CellStyle = tableHeaderStyle;
+//                    // Ngày tháng năm sinh
+//                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, cellIndex, cellIndex + 1));
+//                    cell = row.CreateCell(cellIndex++);
+//                    cell.SetCellValue("Ngày tháng năm sinh");
+//                    cell.CellStyle = tableHeaderStyle;
+//                    cell = row.CreateCell(cellIndex++);
+//                    cell.CellStyle = tableHeaderStyle;
+//                    // Mã tiêm chủng
+//                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
+//                    cell = row.CreateCell(cellIndex++);
+//                    cell.SetCellValue("Mã tiêm chủng");
+//                    cell.CellStyle = tableHeaderStyle;
+//                    // Địa chỉ 
+//                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
+//                    cell = row.CreateCell(cellIndex++);
+//                    cell.SetCellValue("Địa chỉ");
+//                    cell.CellStyle = tableHeaderStyle;
+//                    // Họ tên người đi cùng
+//                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
+//                    cell = row.CreateCell(cellIndex++);
+//                    cell.SetCellValue("Họ tên người đi cùng");
+//                    cell.CellStyle = tableHeaderStyle;
+//                    // Mối quan hệ
+//                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
+//                    cell = row.CreateCell(cellIndex++);
+//                    cell.SetCellValue("Mối quan hệ");
+//                    cell.CellStyle = tableHeaderStyle;
+//                    // SĐT
+//                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
+//                    cell = row.CreateCell(cellIndex++);
+//                    cell.SetCellValue("SĐT");
+//                    cell.CellStyle = tableHeaderStyle;
+//                    // Mũi tiêm
+//                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
+//                    cell = row.CreateCell(cellIndex++);
+//                    cell.SetCellValue("Mũi tiêm");
+//                    cell.CellStyle = tableHeaderStyle;
+//                    // Ngày tiêm
+//                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
+//                    cell = row.CreateCell(cellIndex++);
+//                    cell.SetCellValue("Ngày tiêm");
+//                    cell.CellStyle = tableHeaderStyle;
+//                    // Loại hình
+//                    excelSheet.AddMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex, cellIndex, cellIndex));
+//                    cell = row.CreateCell(cellIndex++);
+//                    cell.SetCellValue("Loại hình");
+//                    cell.CellStyle = tableHeaderStyle;
+//                    //
+//                    row = excelSheet.CreateRow(rowIndex++);
+//                    for (int i = 0; i < 12; i++)
+//                    {
+//                        cell = row.CreateCell(i);
+//                        cell.CellStyle = tableHeaderStyle;
+//                        if (i == 3)
+//                            cell.SetCellValue("Nam");
+//                        if (i == 4)
+//                            cell.SetCellValue("Nữ");
+//                    }
+//                    #endregion
+//
+//                    #region Table Data
+//                    int stt = 0;
+//                    foreach (var item in rs.ToList())
+//                    {
+//                        stt++;
+//                        int dataIndex = 0;
+//                        row = excelSheet.CreateRow(rowIndex++);
+//                        // Stt
+//                        cell = row.CreateCell(dataIndex++);
+//                        cell.SetCellValue(stt);
+//                        cell.CellStyle = tableDataStyle;
+//                        // Id
+//                        cell = row.CreateCell(dataIndex++);
+//                        cell.SetCellValue(item.Interval.NumId);
+//                        cell.CellStyle = tableDataStyle;
+//                        // Họ tên
+//                        cell = row.CreateCell(dataIndex++);
+//                        cell.SetCellValue(item.Customer.Fullname);
+//                        cell.CellStyle = tableDataStyle;
+//                        // Nam/Nữ Năm sinh
+//                        if (item != null && item.Customer != null)
+//                        {
+//                            // Nam
+//                            cell = row.CreateCell(dataIndex++);
+//                            cell.CellStyle = tableDataStyle;
+//                            cell.SetCellValue(item.Customer.Gender == true ? item.Customer.BirthDate.ToString("dd/MM/yyyy") : "");
+//                            // Nữ
+//                            cell = row.CreateCell(dataIndex++);
+//                            cell.CellStyle = tableDataStyle;
+//                            cell.SetCellValue(item.Customer.Gender == false ? item.Customer.BirthDate.ToString("dd/MM/yyyy") : "");
+//                        }
+//                        // Mã tiêm chủng
+//                        cell = row.CreateCell(dataIndex++);
+//                        cell.SetCellValue(item.Customer.VaccinationCode);
+//                        cell.CellStyle = tableDataStyle;
+//                        // Địa chỉ tại VN
+//                        cell = row.CreateCell(dataIndex++);
+//                        cell.SetCellValue(item.Customer.GetFullAddress());
+//                        cell.CellStyle = tableDataStyle;
+//                        // Họ tên người đi cùng
+//                        cell = row.CreateCell(dataIndex++);
+//                        cell.SetCellValue(item.Contacts.FirstOrDefault() != null ? item.Contacts.FirstOrDefault().Fullname : null);
+//                        cell.CellStyle = tableDataStyle;
+//                        // Mối quan hệ
+//                        cell = row.CreateCell(dataIndex++);
+//                        cell.SetCellValue(item.Contacts.FirstOrDefault() != null ? item.Contacts.FirstOrDefault().Relationship : null);
+//                        cell.CellStyle = tableDataStyle;
+//                        // SĐT
+//                        cell = row.CreateCell(dataIndex++);
+//                        cell.SetCellValue(item.Customer.Phone);
+//                        cell.CellStyle = tableDataStyle;
+//                        // Mũi tiêm
+//                        cell = row.CreateCell(dataIndex++);
+//                        cell.SetCellValue(item.Service.Name);
+//                        cell.CellStyle = tableDataStyle;
+//                        // Ngày tiêm
+//                        cell = row.CreateCell(dataIndex++);
+//                        cell.SetCellValue(item.Date.ToString("dd/MM/yyyy"));
+//                        cell.CellStyle = tableDataStyle;
+//                        // Loại hình
+//                        cell = row.CreateCell(dataIndex++);
+//                        cell.SetCellValue(item.ServiceType != null ? item.ServiceType.Name : null);
+//                        cell.CellStyle = tableDataStyle;
+//                    }
+//                    #endregion
+//                    // sizing
+//                    cellIndex = 0;
+//                    // STT
+//                    excelSheet.SetColumnWidth(cellIndex++, 256 * 5);
+//                    // Id
+//                    excelSheet.SetColumnWidth(cellIndex++, 256 * 5);
+//                    // Họ tên
+//                    excelSheet.SetColumnWidth(cellIndex++, 256 * 25);
+//                    // Nam
+//                    excelSheet.SetColumnWidth(cellIndex++, 256 * 15);
+//                    // Nữ
+//                    excelSheet.SetColumnWidth(cellIndex++, 256 * 15);
+//                    // mã tiêm
+//                    excelSheet.SetColumnWidth(cellIndex++, 256 * 15);
+//                    // Địa chỉ tại VN
+//                    excelSheet.SetColumnWidth(cellIndex++, 256 * 30);
+//                    // Họ tên
+//                    excelSheet.SetColumnWidth(cellIndex++, 256 * 25);
+//                    // MQH
+//                    excelSheet.SetColumnWidth(cellIndex++, 256 * 15);
+//                    // SDT
+//                    excelSheet.SetColumnWidth(cellIndex++, 256 * 20);
+//                    // Mũi tiêm
+//                    excelSheet.SetColumnWidth(cellIndex++, 256 * 30);
+//                    // Ngày tiêm
+//                    excelSheet.SetColumnWidth(cellIndex++, 256 * 25);
+//                    // Loại hình
+//                    excelSheet.SetColumnWidth(cellIndex++, 256 * 30);
+//                    //
+//                    workbook.Write(ms);
+//                    return new ResultModel()
+//                    {
+//                        Succeed = true,
+//                        Data = ms.ToArray(),
+//                    };
+//                }
+//            }
+//            catch (Exception e)
+//            {
+//                result.Succeed = false;
+//                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message : e.Message;
+//                result.ErrorMessage += Environment.NewLine + "StackTrace:" + e.StackTrace;
+//            }
+//            return result;
+//        }
     }
 }
