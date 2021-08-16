@@ -21,7 +21,7 @@ namespace Services.Core
     public interface IExaminationService
     {
         Task<ResultModel> Add(ExaminationCreateModel model, string username);
-        Task<ResultModel> Get(Guid hospitalId, int? status = null, DateTime? from = null, DateTime? to = null);
+        Task<ResultModel> Get(Guid? hospitalId = null, int? status = null, DateTime? from = null, DateTime? to = null,Guid? doctorId=null);
         Task<ResultModel> Update(ExaminationUpdateModel model);
 
         Task<ResultModel> Delete(ExaminationDeleteModel model);
@@ -34,7 +34,7 @@ namespace Services.Core
         Task<ResultModel> CreateResultForm(FormFileCreateModel model);
         Task<ResultModel> GetResultForm(Guid examId);
         Task<ResultModel> UpdateResultForm(FormFileUpdateModel model);
-        Task<ResultModel> Statistic(Guid unitId, DateTime? from = null, DateTime? to = null);
+        Task<ResultModel> Statistic(Guid? unitId=null, DateTime? from = null, DateTime? to = null, Guid? doctorId = null);
 
         ResultModel TestRabit(Object Model);
 
@@ -171,14 +171,24 @@ namespace Services.Core
             return result;
         }
 
-        public async Task<ResultModel> Get(Guid hospitalId, int? status = null, DateTime? from = null, DateTime? to = null)
+        public async Task<ResultModel> Get(Guid? hospitalId, int? status = null, DateTime? from = null, DateTime? to = null,
+            Guid? doctorId = null)
         {
             var result = new ResultModel();
             try
             {
                 var basefilter = Builders<Examination>.Filter.Empty;
-                var hospitalIdFilter = Builders<Examination>.Filter.Eq(mt => mt.Unit.Id, hospitalId);
-                basefilter = basefilter & hospitalIdFilter;
+
+                if (hospitalId.HasValue)
+                {
+                    var hospitalIdFilter = Builders<Examination>.Filter.Eq(mt => mt.Unit.Id, hospitalId);
+                    basefilter = basefilter & hospitalIdFilter;
+                }            
+                if (doctorId.HasValue)
+                {
+                    var doctorIdFilter = Builders<Examination>.Filter.Eq(mt => mt.Doctor.Id, doctorId);
+                    basefilter = basefilter & doctorIdFilter;
+                }
 
                 if (status.HasValue)
                 {
@@ -195,6 +205,7 @@ namespace Services.Core
                     var toFilter = Builders<Examination>.Filter.Lte(mt => mt.Date, to.Value);
                     basefilter = basefilter & toFilter;
                 }
+               
                 // return
                 var rs = await _context.Examinations.FindAsync(basefilter);
                 var list = await rs.ToListAsync();
@@ -628,12 +639,22 @@ namespace Services.Core
             return result;
         }
 
-        public async Task<ResultModel> Statistic(Guid unitId, DateTime? from = null, DateTime? to = null)
+        public async Task<ResultModel> Statistic(Guid? unitId = null, DateTime? from = null, DateTime? to = null, Guid? doctorId = null)
         {
             var result = new ResultModel();
             try
             {
-                var basefilter = Builders<Examination>.Filter.Where(_ => _.Unit.Id == unitId);
+                var basefilter = Builders<Examination>.Filter.Empty;
+                if (unitId.HasValue)
+                {
+                    basefilter = basefilter & Builders<Examination>.Filter.Where(_ => _.Unit.Id == unitId);
+                }
+
+                if (doctorId.HasValue)
+                {
+                    basefilter = basefilter & Builders<Examination>.Filter.Where(_ => _.Doctor.Id == doctorId);
+                }
+
                 if (from.HasValue)
                 {
                     basefilter = basefilter & Builders<Examination>.Filter.Gte(mt => mt.Date, from.Value);
@@ -642,12 +663,34 @@ namespace Services.Core
                 {
                     basefilter = basefilter & Builders<Examination>.Filter.Lte(mt => mt.Date, to.Value);
                 }
-                var unfinishedFilter = basefilter & Builders<Examination>.Filter.Where(_ => _.Unit.Id == unitId && _.Status == BookingStatus.UNFINISHED);
-                var finishedFilter = basefilter & Builders<Examination>.Filter.Where(_ => _.Unit.Id == unitId && _.Status == BookingStatus.FINISHED);
-                var canceledFilter = basefilter & Builders<Examination>.Filter.Where(_ => _.Unit.Id == unitId && _.Status == BookingStatus.CANCELED);
-                var notDoingFilter = basefilter & Builders<Examination>.Filter.Where(_ => _.Unit.Id == unitId && _.Status == BookingStatus.NOT_DOING);
-                var docCancelFilter = basefilter & Builders<Examination>.Filter.Where(_ => _.Unit.Id == unitId && _.Status == BookingStatus.DOCTOR_CANCEL);
-                var resultedFilter = basefilter & Builders<Examination>.Filter.Where(_ => _.Unit.Id == unitId && _.Status == BookingStatus.RESULTED);
+
+
+
+
+                var unfinishedFilter = unitId.HasValue ? 
+                    basefilter & Builders<Examination>.Filter.Where(_ => _.Unit.Id == unitId && _.Status == BookingStatus.UNFINISHED) :
+                    basefilter & Builders<Examination>.Filter.Where(_ => _.Doctor.Id == doctorId && _.Status == BookingStatus.UNFINISHED);
+
+
+                var finishedFilter = unitId.HasValue ? 
+                    basefilter & Builders<Examination>.Filter.Where(_ => _.Unit.Id == unitId && _.Status == BookingStatus.FINISHED):
+                    basefilter & Builders<Examination>.Filter.Where(_ => _.Doctor.Id == doctorId && _.Status == BookingStatus.FINISHED);
+
+                var canceledFilter = unitId.HasValue ?
+                    basefilter & Builders<Examination>.Filter.Where(_ => _.Unit.Id == unitId && _.Status == BookingStatus.CANCELED) :
+                    basefilter & Builders<Examination>.Filter.Where(_ => _.Doctor.Id == doctorId && _.Status == BookingStatus.CANCELED);
+
+                var notDoingFilter = unitId.HasValue ?
+                    basefilter & Builders<Examination>.Filter.Where(_ => _.Unit.Id == unitId && _.Status == BookingStatus.NOT_DOING) :
+                    basefilter & Builders<Examination>.Filter.Where(_ => _.Doctor.Id == doctorId && _.Status == BookingStatus.NOT_DOING);
+
+                var docCancelFilter = unitId.HasValue ?
+                    basefilter & Builders<Examination>.Filter.Where(_ => _.Unit.Id == unitId && _.Status == BookingStatus.DOCTOR_CANCEL) :
+                     basefilter & Builders<Examination>.Filter.Where(_ => _.Doctor.Id == doctorId && _.Status == BookingStatus.DOCTOR_CANCEL);
+
+                var resultedFilter = unitId.HasValue ?
+                    basefilter & Builders<Examination>.Filter.Where(_ => _.Unit.Id == unitId && _.Status == BookingStatus.RESULTED):
+                    basefilter & Builders<Examination>.Filter.Where(_ => _.Doctor.Id == doctorId && _.Status == BookingStatus.RESULTED);
                 // tasks
                 var totalTask = _context.Examinations.CountDocumentsAsync(basefilter);
                 var unfinishedTask = _context.Examinations.CountDocumentsAsync(unfinishedFilter);

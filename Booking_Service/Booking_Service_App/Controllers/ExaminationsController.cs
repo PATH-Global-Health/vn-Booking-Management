@@ -54,7 +54,7 @@ namespace Booking_Service_App.Controllers
         /// <param name="to"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> Get(Guid? unitId, int? status = null, DateTime? from = null, DateTime? to = null) //For Unit and Doctor
+        public async Task<IActionResult> Get(Guid? unitId = null, int? status = null, DateTime? from = null, DateTime? to = null,Guid? doctorId = null) //For Unit and Doctor
         {
             try
             {
@@ -63,6 +63,10 @@ namespace Booking_Service_App.Controllers
                 if (unitId.HasValue)
                 {
                     result = await _examService.Get(unitId.Value, status, from, to);
+                }
+                else if (doctorId.HasValue)
+                {
+                    result = await _examService.Get(unitId, status, from, to, doctorId.Value);
                 }
                 else
                 {
@@ -264,9 +268,23 @@ namespace Booking_Service_App.Controllers
 
         [HttpGet("Statistic")]
         [AllowAnonymous]
-        public async Task<IActionResult> Statistic(Guid unitId, DateTime? from = null, DateTime? to = null)
+        public async Task<IActionResult> Statistic(Guid? unitId = null, Guid? doctorId = null, DateTime? from = null, DateTime? to = null)
         {
-            var result = await _examService.Statistic(unitId, from, to);
+            ResultModel result = new ResultModel();
+
+            if (unitId.HasValue)
+            {
+                 result = await _examService.Statistic(unitId.Value, from, to);
+            }
+            else if(doctorId.HasValue)
+            {
+                result = await _examService.Statistic(unitId, from, to, doctorId.Value);
+            }
+            else if(unitId == null && doctorId == null )
+            {
+                return BadRequest("UnitId and DoctorId is null");
+            }
+            
             if (result.Succeed)
             {
                 return Ok(result.Data);
