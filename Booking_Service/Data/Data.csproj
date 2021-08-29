@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <None Remove="Constants\RabbitQueue.cs~RF2a68e20f.TMP" />
+    <None Remove="DataAccess\ApplicationDbContext.cs~RF15c6c309.TMP" />
   </ItemGroup>
 
   <ItemGroup>

@@ -22,4 +22,15 @@ namespace Data.Enums
         DOCTOR_CANCEL = 5,
         RESULTED = 6
     }
+
+    public enum TestingType : int
+    {
+        LAY_TEST  =1,
+        VIRAL_LOAD = 2,
+        CD4 = 3,
+        RECENCY = 4,
+        HTS_POS = 5
+    }
+
+   
 }

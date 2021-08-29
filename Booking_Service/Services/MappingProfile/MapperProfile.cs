@@ -21,6 +21,12 @@ namespace Services.MappingProfile
             CreateMap<ServiceType, ServiceTypeModel>().ReverseMap();
             CreateMap<Unit, UnitModel>().ReverseMap();
             CreateMap<ExitInformation, ExitInformationModel>().ReverseMap();
+            //----------------
+            CreateMap<App, AppModel>().ReverseMap();
+            CreateMap<Facility, FacilityModel>().ReverseMap();
+            CreateMap<Result, ResultTestingModel>().ReverseMap();
+            CreateMap<CDO_Employee, CDO_EmployeeModel>().ReverseMap();
+
 
             //
             //CreateMap<FormFile, FormFileCreateModel>().ReverseMap();
@@ -49,6 +55,11 @@ namespace Services.MappingProfile
                 .ForMember(m => m.PassportNumber, op => op.MapFrom(vm => vm.Customer.PassportNumber))
                 .ForMember(m => m.Nation, op => op.MapFrom(vm => vm.Customer.Nation))
                 ;
+
+            CreateMap<TestingHistoryCreateModel, TestingHistory>();
+            CreateMap<LayTestCreateModel, TestingHistory>()
+                .ForMember(m=>m.App,e=>e.Ignore())
+                .ForMember(m => m.Facility, e => e.Ignore());
         }
     }
 }
