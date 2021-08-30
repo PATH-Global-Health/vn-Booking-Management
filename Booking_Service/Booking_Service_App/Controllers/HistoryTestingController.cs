@@ -12,7 +12,7 @@ namespace Booking_Service_App.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-  //  [Authorize(AuthenticationSchemes = "Bearer")]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     public class HistoryTestingController : ControllerBase
     {
         private ITestingHistoryService _testingHistoryService;
@@ -81,6 +81,24 @@ namespace Booking_Service_App.Controllers
             try
             {
                 var result = await _testingHistoryService.GetLayTest(employeeId, employeeName, customer, customerId);
+                if (result.Succeed)
+                {
+                    return Ok(result.Data);
+                }
+                return BadRequest(result.ErrorMessage);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPut("LayTest")]
+        public async Task<IActionResult> UpdateLayTest(LayTestUpdateModel model)
+        {
+            try
+            {
+                var result = await _testingHistoryService.UpdateLayTest(model);
                 if (result.Succeed)
                 {
                     return Ok(result.Data);

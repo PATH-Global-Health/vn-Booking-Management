@@ -12,6 +12,7 @@ namespace Data.MongoCollections
         public Guid Id { get; set; } = Guid.NewGuid();
         public bool IsDelete { get; set; }
         public DateTime DateCreate { get; set; } = DateTime.UtcNow.AddHours(7);
+        public DateTime DateUpdate { get; set; }
         public App App { get; set; }
         public Facility Facility { get; set; }
         public Customer Customer { get; set; }

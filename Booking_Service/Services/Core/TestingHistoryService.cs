@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Data.DataAccess;
+using Data.Enums;
 using Data.MongoCollections;
 using Data.ViewModels;
 using MongoDB.Driver;
@@ -17,6 +18,8 @@ namespace Services.Core
 
         Task<ResultModel> GetLayTest(string employeeId,string employeeName,string customer, Guid? customerId = null);
         Task<ResultModel> GetLayTestById(Guid laytestId);
+        Task<ResultModel> UpdateLayTest(LayTestUpdateModel model);
+
 
 
 
@@ -55,6 +58,7 @@ namespace Services.Core
             var result = new ResultModel();
             try
             {
+                model.Result.Type = TestingType.LAY_TEST;
                 var data = _mapper.Map<LayTestCreateModel, TestingHistory>(model);
                 await _context.TestingHistory.InsertOneAsync(data);
                 result.Data = model;
@@ -138,6 +142,35 @@ namespace Services.Core
 
             return result;
         }
+
+        public async Task<ResultModel> UpdateLayTest(LayTestUpdateModel model)
+        {
+            var result = new ResultModel();
+            try
+            {
+                var filter = Builders<TestingHistory>.Filter.Eq(en => en.Id, model.Id);
+                var update = Builders<TestingHistory>.Update.Set(mt => mt.IsDelete, model.IsDelete);
+
+                if (model.ViralLoad != 0 || model.ViralLoad >0)
+                {
+                    update = update.Set(en => en.Result.ViralLoad, model.ViralLoad);
+                }
+
+                await _context.TestingHistory.UpdateOneAsync(filter, update);
+                var modelUpdated = _context.TestingHistory.Find(filter).FirstOrDefault();
+                var data = _mapper.Map<TestingHistory, LayTestViewModel>(modelUpdated);
+                result.Data = data;
+                result.Succeed = true;
+            }
+            catch (Exception e)
+            {
+                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+
+            return result;
+        }
+
+
 
 
 
