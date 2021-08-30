@@ -6,6 +6,7 @@ using AutoMapper;
 using Data.DataAccess;
 using Data.MongoCollections;
 using Data.ViewModels;
+using MongoDB.Driver;
 
 namespace Services.Core
 {
@@ -13,6 +14,11 @@ namespace Services.Core
     {
         Task<ResultModel> Add(TestingHistoryCreateModel model);
         Task<ResultModel> CreateLayTest(LayTestCreateModel model);
+
+        Task<ResultModel> GetLayTest(string employeeId,string employeeName,string customer, Guid? customerId = null);
+        Task<ResultModel> GetLayTestById(Guid laytestId);
+
+
 
     }
     public class TestingHistoryService: ITestingHistoryService
@@ -61,6 +67,81 @@ namespace Services.Core
 
             return result;
         }
+
+        public async Task<ResultModel> GetLayTest(string employeeId, string employeeName, string customerName, Guid? customerId = null)
+        {
+            var result = new ResultModel();
+            try
+            {
+                var basefilter = Builders<TestingHistory>.Filter.Empty;
+
+                if (!string.IsNullOrEmpty(employeeId))
+                {
+                    var employeeIdFilter =
+                        Builders<TestingHistory>.Filter.Eq(x => x.CDO_Employee.EmployeeId , employeeId);
+
+                    basefilter = basefilter & employeeIdFilter;
+                }
+
+                if (!string.IsNullOrEmpty(employeeName))
+                {
+                    var employeeNameFilter =
+                        Builders<TestingHistory>.Filter.Eq(x => x.CDO_Employee.Name, employeeName);
+
+                    basefilter = basefilter & employeeNameFilter;
+                }
+
+                if (!string.IsNullOrEmpty(customerName))
+                {
+                    var customerNameFilter =
+                        Builders<TestingHistory>.Filter.Eq(x => x.Customer.Fullname, customerName);
+
+                    basefilter = basefilter & customerNameFilter;
+                }
+
+                if (customerId.HasValue)
+                {
+                    var customerIdFilter =
+                        Builders<TestingHistory>.Filter.Eq(x => x.Customer.Id, customerId);
+
+                    basefilter = basefilter & customerIdFilter;
+                }
+
+
+                var rs = await _context.TestingHistory.FindAsync(basefilter);
+                var list = await rs.ToListAsync();
+                result.Data = _mapper.Map<List<TestingHistory>, List<LayTestViewModel>>(list);
+                result.Succeed = true;
+            }
+            catch (Exception e)
+            {
+                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+
+            return result;
+        }
+
+        public async Task<ResultModel> GetLayTestById(Guid laytestId)
+        {
+            var result = new ResultModel();
+            try
+            {
+                var entity = await _context.TestingHistory.FindAsync(x => x.Id == laytestId);
+                var data = _mapper.Map<TestingHistory, LayTestViewModel>(entity.FirstOrDefault());
+                result.Data = data;
+                result.Succeed = true;
+            }
+            catch (Exception e)
+            {
+                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+
+            return result;
+        }
+
+
+
+
 
 
     }

@@ -60,6 +60,11 @@ namespace Services.MappingProfile
             CreateMap<LayTestCreateModel, TestingHistory>()
                 .ForMember(m=>m.App,e=>e.Ignore())
                 .ForMember(m => m.Facility, e => e.Ignore());
+
+            CreateMap<TestingHistory, LayTestViewModel>();
+
+
+
         }
     }
 }

@@ -17,7 +17,14 @@ namespace Data.ViewModels
 
     public class LayTestCreateModel : LayTestModel
     {
-       
+        
+    }
+
+    public class LayTestViewModel : LayTestModel
+    {
+        public Guid Id { get; set; } 
+        public bool IsDelete { get; set; }
+        public DateTime DateCreate { get; set; } 
     }
 
 

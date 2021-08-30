@@ -56,5 +56,41 @@ namespace Booking_Service_App.Controllers
                 return BadRequest(e.Message);
             }
         }
+
+        [HttpGet("LayTestById/{id}")]
+        public async Task<IActionResult> GetLayTestById(Guid id)
+        {
+            try
+            {
+                var result = await _testingHistoryService.GetLayTestById(id);
+                if (result.Succeed)
+                {
+                    return Ok(result.Data);
+                }
+                return BadRequest(result.ErrorMessage);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpGet("LayTest")]
+        public async Task<IActionResult> Get(string employeeId, string employeeName, string customer, Guid? customerId = null)
+        {
+            try
+            {
+                var result = await _testingHistoryService.GetLayTest(employeeId, employeeName, customer, customerId);
+                if (result.Succeed)
+                {
+                    return Ok(result.Data);
+                }
+                return BadRequest(result.ErrorMessage);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
     }
 }
