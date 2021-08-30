@@ -14,15 +14,11 @@ namespace Services.Core
     public interface ITestingHistoryService
     {
         Task<ResultModel> Add(TestingHistoryCreateModel model);
+        Task<ResultModel> GetById(Guid id);
         Task<ResultModel> CreateLayTest(LayTestCreateModel model);
-
         Task<ResultModel> GetLayTest(string employeeId,string employeeName,string customer, Guid? customerId = null);
         Task<ResultModel> GetLayTestById(Guid laytestId);
         Task<ResultModel> UpdateLayTest(LayTestUpdateModel model);
-
-
-
-
     }
     public class TestingHistoryService: ITestingHistoryService
     {
@@ -35,6 +31,9 @@ namespace Services.Core
             _mapper = mapper;
         }
 
+        // TESTING_HISTORY
+
+        #region Add
         public async Task<ResultModel> Add(TestingHistoryCreateModel model)
         {
             var result = new ResultModel();
@@ -42,7 +41,27 @@ namespace Services.Core
             {
                 var data = _mapper.Map<TestingHistoryCreateModel, TestingHistory>(model);
                 await _context.TestingHistory.InsertOneAsync(data);
-                result.Data = model;
+                result.Data = data.Id;
+                result.Succeed = true;
+            }
+            catch (Exception e)
+            {
+                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+            return result;
+        }
+        #endregion
+
+        #region GetById
+        public async Task<ResultModel> GetById(Guid testHistoryId)
+        {
+            var result = new ResultModel();
+
+            try
+            {
+                var entity = await _context.TestingHistory.FindAsync(x => x.Id == testHistoryId);
+                var data = _mapper.Map<TestingHistory, TestingHistoryViewModel>(entity.FirstOrDefault());
+                result.Data = data;
                 result.Succeed = true;
             }
             catch (Exception e)
@@ -50,9 +69,14 @@ namespace Services.Core
                 result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
             }
 
+
             return result;
         }
+        #endregion
 
+        // LAYTEST
+
+        #region AddLayTest
         public async Task<ResultModel> CreateLayTest(LayTestCreateModel model)
         {
             var result = new ResultModel();
@@ -71,7 +95,9 @@ namespace Services.Core
 
             return result;
         }
+        #endregion
 
+        #region GetLayTest
         public async Task<ResultModel> GetLayTest(string employeeId, string employeeName, string customerName, Guid? customerId = null)
         {
             var result = new ResultModel();
@@ -124,7 +150,9 @@ namespace Services.Core
 
             return result;
         }
+        #endregion
 
+        #region GetLayTestById
         public async Task<ResultModel> GetLayTestById(Guid laytestId)
         {
             var result = new ResultModel();
@@ -142,7 +170,9 @@ namespace Services.Core
 
             return result;
         }
+        #endregion
 
+        #region UpdateLayTest
         public async Task<ResultModel> UpdateLayTest(LayTestUpdateModel model)
         {
             var result = new ResultModel();
@@ -155,6 +185,8 @@ namespace Services.Core
                 {
                     update = update.Set(en => en.Result.ViralLoad, model.ViralLoad);
                 }
+
+                update = update.Set(en => en.DateUpdate, DateTime.UtcNow.AddHours(7));
 
                 await _context.TestingHistory.UpdateOneAsync(filter, update);
                 var modelUpdated = _context.TestingHistory.Find(filter).FirstOrDefault();
@@ -169,12 +201,7 @@ namespace Services.Core
 
             return result;
         }
-
-
-
-
-
-
+        #endregion
 
 
     }

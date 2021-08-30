@@ -29,6 +29,19 @@ namespace Data.ViewModels
         public ResultTestingModel Result { get; set; }
     }
 
+    public class TestingHistoryViewModel
+    {
+        public Guid Id { get; set; } 
+        public bool IsDelete { get; set; }
+        public DateTime DateCreate { get; set; } 
+        public DateTime DateUpdate { get; set; }
+        public AppModel App { get; set; }
+        public FacilityModel Facility { get; set; }
+        public CustomerModel Customer { get; set; }
+        public CDO_EmployeeModel CDO_Employee { get; set; }
+        public ResultTestingModel Result { get; set; }
+    }
+
     public class AppModel
     {
         public string AppId { get; set; }

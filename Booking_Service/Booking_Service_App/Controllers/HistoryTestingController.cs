@@ -21,6 +21,24 @@ namespace Booking_Service_App.Controllers
             _testingHistoryService = testingHistoryService;
         }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            try
+            {
+                var result = await _testingHistoryService.GetById(id);
+                if (result.Succeed)
+                {
+                    return Ok(result.Data);
+                }
+                return BadRequest(result.ErrorMessage);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] TestingHistoryCreateModel model)
         {
@@ -39,23 +57,7 @@ namespace Booking_Service_App.Controllers
             }
         }
 
-        [HttpPost("LayTest")]
-        public async Task<IActionResult> CreateLayTest([FromBody] LayTestCreateModel model)
-        {
-            try
-            {
-                var result = await _testingHistoryService.CreateLayTest(model);
-                if (result.Succeed)
-                {
-                    return Ok(result.Data);
-                }
-                return BadRequest(result.ErrorMessage);
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
-        }
+        #region LayTest
 
         [HttpGet("LayTestById/{id}")]
         public async Task<IActionResult> GetLayTestById(Guid id)
@@ -93,6 +95,26 @@ namespace Booking_Service_App.Controllers
             }
         }
 
+        [HttpPost("LayTest")]
+        public async Task<IActionResult> CreateLayTest([FromBody] LayTestCreateModel model)
+        {
+            try
+            {
+                var result = await _testingHistoryService.CreateLayTest(model);
+                if (result.Succeed)
+                {
+                    return Ok(result.Data);
+                }
+                return BadRequest(result.ErrorMessage);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        
+
         [HttpPut("LayTest")]
         public async Task<IActionResult> UpdateLayTest(LayTestUpdateModel model)
         {
@@ -110,5 +132,6 @@ namespace Booking_Service_App.Controllers
                 return BadRequest(e.Message);
             }
         }
+        #endregion
     }
 }
