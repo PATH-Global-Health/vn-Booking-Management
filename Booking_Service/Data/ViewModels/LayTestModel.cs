@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
+using Data.Enums;
 
 namespace Data.ViewModels
 {
@@ -33,8 +34,11 @@ namespace Data.ViewModels
     {
         public Guid Id { get; set; }
         public bool IsDelete { get; set; }
-        public double ViralLoad { get; set; }
-
+        //Giao kit xét nghiệm
+        public string Code { get; set; }
+        public double TakenDate { get; set; }
+        // Kết quả xét nghiệm
+        public string ResultTesting { get; set; }
     }
 
 

@@ -17,6 +17,8 @@ namespace Services.Core
         Task<ResultModel> GetById(Guid id);
         Task<ResultModel> CreateLayTest(LayTestCreateModel model);
         Task<ResultModel> GetLayTest(string employeeId,string employeeName,string customer, Guid? customerId = null);
+
+        Task<ResultModel> GetLayTestCustomer(string emoployId ,string customer, Guid? customerId = null);
         Task<ResultModel> GetLayTestById(Guid laytestId);
         Task<ResultModel> UpdateLayTest(LayTestUpdateModel model);
     }
@@ -83,6 +85,12 @@ namespace Services.Core
             try
             {
                 model.Result.Type = TestingType.LAY_TEST;
+
+                if (!string.IsNullOrEmpty((model.Result.ResultTesting)))
+                {
+                    model.Result.ResultDate = DateTime.UtcNow.AddHours(7).ToString();
+                }
+
                 var data = _mapper.Map<LayTestCreateModel, TestingHistory>(model);
                 await _context.TestingHistory.InsertOneAsync(data);
                 result.Data = model;
@@ -172,6 +180,41 @@ namespace Services.Core
         }
         #endregion
 
+        #region GetLayTestCustomer
+
+        public async Task<ResultModel> GetLayTestCustomer(string emoployId, string customer, Guid? customerId = null)
+        {
+            var result = new ResultModel();
+            try
+            {
+                var basefilter = Builders<TestingHistory>.Filter.Eq(x => x.CDO_Employee.EmployeeId,emoployId);
+
+                if (!string.IsNullOrEmpty(customer))
+                {
+                    var customerNameFilter = Builders<TestingHistory>.Filter.Eq(x => x.Customer.Fullname, customer);
+                    basefilter = basefilter & customerNameFilter;
+                }
+
+                if (customerId.HasValue)
+                {
+                    var customerIdFiler = Builders<TestingHistory>.Filter.Eq(x => x.Customer.Id, customerId);
+                    basefilter = basefilter & customerIdFiler;
+                }
+
+                var rs = await _context.TestingHistory.FindAsync(basefilter);
+                var list = await rs.ToListAsync();
+                result.Data = _mapper.Map<List<TestingHistory>, List<LayTestViewModel>>(list);
+                result.Succeed = true;
+            }
+            catch (Exception e)
+            {
+                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+
+            return result;
+        }
+        #endregion
+
         #region UpdateLayTest
         public async Task<ResultModel> UpdateLayTest(LayTestUpdateModel model)
         {
@@ -181,10 +224,18 @@ namespace Services.Core
                 var filter = Builders<TestingHistory>.Filter.Eq(en => en.Id, model.Id);
                 var update = Builders<TestingHistory>.Update.Set(mt => mt.IsDelete, model.IsDelete);
 
-                if (model.ViralLoad != 0 || model.ViralLoad >0)
+                if (!string.IsNullOrEmpty(model.ResultTesting))
                 {
-                    update = update.Set(en => en.Result.ViralLoad, model.ViralLoad);
+                    update = update.Set(en => en.Result.ResultTesting, model.ResultTesting);
+                    update = update.Set(en => en.Result.ResultDate, DateTime.UtcNow.AddHours(7).ToString());
                 }
+
+                if (!string.IsNullOrEmpty(model.Code))
+                {
+                    update = update.Set(en => en.Result.Code, model.Code);
+                    update = update.Set(en => en.Result.TakenDate, model.TakenDate);
+                }
+
 
                 update = update.Set(en => en.DateUpdate, DateTime.UtcNow.AddHours(7));
 

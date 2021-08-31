@@ -32,5 +32,13 @@ namespace Data.Enums
         HTS_POS = 5
     }
 
-   
+    public enum ResultTesting : int
+    {
+        POSITIVE = 1,
+        NEGATIVE = -1,
+        NO_RESULT = 0
+    } 
+
+
+
 }

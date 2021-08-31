@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Booking_Service_App.Extensions;
 using Data.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Services.Core;
@@ -13,10 +14,10 @@ namespace Booking_Service_App.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(AuthenticationSchemes = "Bearer")]
-    public class HistoryTestingController : ControllerBase
+    public class TestingHistoryController : ControllerBase
     {
         private ITestingHistoryService _testingHistoryService;
-        public HistoryTestingController(ITestingHistoryService testingHistoryService)
+        public TestingHistoryController(ITestingHistoryService testingHistoryService)
         {
             _testingHistoryService = testingHistoryService;
         }
@@ -82,7 +83,26 @@ namespace Booking_Service_App.Controllers
         {
             try
             {
-                var result = await _testingHistoryService.GetLayTest(employeeId, employeeName, customer, customerId);
+                var result = await _testingHistoryService.GetLayTest(employeeId, employeeName, customer, customerId.HasValue?customerId.Value: customerId);
+                if (result.Succeed)
+                {
+                    return Ok(result.Data);
+                }
+                return BadRequest(result.ErrorMessage);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpGet("LayTestByCustomer")]
+        public async Task<IActionResult> GetLayTestByCustomer(string customerName, Guid? customerId = null)
+        {
+            try
+            {
+                var emp = User.Claims.Where(cl => cl.Type == "Id").FirstOrDefault().Value;
+                var result = await _testingHistoryService.GetLayTestCustomer(emp, customerName, customerId.HasValue?customerId.Value:customerId);
                 if (result.Succeed)
                 {
                     return Ok(result.Data);
