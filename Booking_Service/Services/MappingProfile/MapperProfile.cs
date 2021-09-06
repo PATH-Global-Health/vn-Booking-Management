@@ -26,6 +26,11 @@ namespace Services.MappingProfile
             CreateMap<Facility, FacilityModel>().ReverseMap();
             CreateMap<Result, ResultTestingModel>().ReverseMap();
             CreateMap<CDO_Employee, CDO_EmployeeModel>().ReverseMap();
+            CreateMap<PrEP_Infomation, PrEP_InfomationModel>().ReverseMap();
+
+            CreateMap<ART_Infomation, ART_InfomationModel>().ReverseMap();
+            CreateMap<TX_ML, TX_ML_Model>().ReverseMap();
+
 
 
             //
@@ -63,6 +68,10 @@ namespace Services.MappingProfile
 
             CreateMap<TestingHistory, LayTestViewModel>();
             CreateMap<TestingHistory, TestingHistoryViewModel>();
+
+
+            CreateMap<PrEPCreateModel, PrEP>();
+            CreateMap<ARTCreateModel, ART>();
 
 
 

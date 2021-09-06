@@ -56,6 +56,8 @@ namespace Booking_Service_App.Extensions
             services.AddScoped<IExcelService, ExcelService>();
             services.AddScoped<IProducerMQ, Producer>();
             services.AddScoped<ITestingHistoryService, TestingHistoryService>();
+            services.AddScoped<IPrEPService, PrEPService>();
+            services.AddScoped<IARTService, ARTService>();
 
         }
     }

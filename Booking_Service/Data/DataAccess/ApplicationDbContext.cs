@@ -24,6 +24,8 @@ namespace Data.DataAccess
         public IMongoCollection<Unit> Units => _db.GetCollection<Unit>("unitV2s");
         public IMongoCollection<ResultForm> ResultForm => _db.GetCollection<ResultForm>("resultForms");
         public IMongoCollection<TestingHistory> TestingHistory => _db.GetCollection<TestingHistory>("testingHistory");
+        public IMongoCollection<PrEP> PrEP => _db.GetCollection<PrEP>("preEP");
+        public IMongoCollection<ART> ART => _db.GetCollection<ART>("art");
 
 
         public IClientSessionHandle StartSession()
@@ -50,6 +52,16 @@ namespace Data.DataAccess
             if (!collectionNames.Any(name => name == "testingHistory"))
             {
                 _db.CreateCollection("testingHistory");
+            }
+
+            if (!collectionNames.Any(name => name == "preEP"))
+            {
+                _db.CreateCollection("preEP");
+            }
+
+            if (!collectionNames.Any(name => name == "art"))
+            {
+                _db.CreateCollection("art");
             }
         }
     }
