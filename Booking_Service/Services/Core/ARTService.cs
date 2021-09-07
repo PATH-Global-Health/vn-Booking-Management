@@ -6,12 +6,14 @@ using AutoMapper;
 using Data.DataAccess;
 using Data.MongoCollections;
 using Data.ViewModels;
+using MongoDB.Driver;
 
 namespace Services.Core
 {
     public interface IARTService
     {
         Task<ResultModel> Add(ARTCreateModel model);
+        Task<ResultModel> GetByCustomerId(Guid customerId);
     }
     public class ARTService : IARTService
     {
@@ -42,7 +44,28 @@ namespace Services.Core
             }
             return result;
         }
+        #endregion
 
+        #region GetByCustomerId
+
+        public async Task<ResultModel> GetByCustomerId(Guid customerId)
+        {
+            var result = new ResultModel();
+            try
+            {
+                var baseFilter = Builders<ART>.Filter.Eq(x => x.Customer.Id, customerId);
+
+                var rs = await _context.ART.FindAsync(baseFilter);
+                var list = await rs.ToListAsync();
+                result.Data = _mapper.Map<List<ART>, List<ARTViewModel>>(list);
+                result.Succeed = true;
+            }
+            catch (Exception e)
+            {
+                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+            return result;
+        }
 
         #endregion
     }

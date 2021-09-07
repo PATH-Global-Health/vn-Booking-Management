@@ -28,6 +28,14 @@ namespace Data.ViewModels
 
     }
 
+    public class PrEPViewModel : PrEPModel
+    {
+        public Guid Id { get; set; }
+        public bool IsDelete { get; set; }
+        public DateTime DateCreate { get; set; } 
+        public DateTime DateUpdate { get; set; }
+    }
+
     public class PrEP_InfomationModel
     {
         public DateTime StartDate { get; set; }

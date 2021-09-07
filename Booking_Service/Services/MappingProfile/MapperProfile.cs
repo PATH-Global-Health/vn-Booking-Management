@@ -71,8 +71,10 @@ namespace Services.MappingProfile
 
 
             CreateMap<PrEPCreateModel, PrEP>();
-            CreateMap<ARTCreateModel, ART>();
+            CreateMap<PrEP, PrEPViewModel>();
 
+            CreateMap<ARTCreateModel, ART>();
+            CreateMap<ART, ARTViewModel>();
 
 
         }

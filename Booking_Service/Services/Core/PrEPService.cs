@@ -6,6 +6,7 @@ using AutoMapper;
 using Data.DataAccess;
 using Data.MongoCollections;
 using Data.ViewModels;
+using MongoDB.Driver;
 
 namespace Services.Core
 {
@@ -13,6 +14,7 @@ namespace Services.Core
     public interface IPrEPService
     {
         Task<ResultModel> Add(PrEPCreateModel model);
+        Task<ResultModel> GetByCustomerId(Guid customerId);
     }
 
     public class PrEPService: IPrEPService
@@ -44,6 +46,30 @@ namespace Services.Core
             return result;
         }
 
+
+        #endregion
+
+        #region GetByCustomerId
+
+        public async Task<ResultModel> GetByCustomerId(Guid customerId)
+        {
+            var result = new ResultModel();
+            try
+            {
+                var baseFilter = Builders<PrEP>.Filter.Eq(x => x.Customer.Id, customerId);
+
+                var rs = await _context.PrEP.FindAsync(baseFilter);
+                var list = await rs.ToListAsync();
+                result.Data = _mapper.Map<List<PrEP>, List<PrEPViewModel>>(list);
+                result.Succeed = true;
+
+            }
+            catch (Exception e)
+            {
+                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+            return result;
+        }
 
         #endregion
     }

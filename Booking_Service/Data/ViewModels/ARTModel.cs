@@ -27,6 +27,14 @@ namespace Data.ViewModels
 
     }
 
+    public class ARTViewModel : ARTModel
+    {
+        public Guid Id { get; set; }
+        public bool IsDelete { get; set; }
+        public DateTime DateCreate { get; set; }
+        public DateTime DateUpdate { get; set; }
+    }
+
     public class ART_InfomationModel
     {
         public DateTime StartDate { get; set; }

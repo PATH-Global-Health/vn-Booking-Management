@@ -21,6 +21,24 @@ namespace Booking_Service_App.Controllers
             _artService = artService;
         }
 
+        [HttpGet("GetByCustomerId/{customerId}")]
+        public async Task<IActionResult> Get(Guid customerId)
+        {
+            try
+            {
+                var result = await _artService.GetByCustomerId(customerId);
+                if (result.Succeed)
+                {
+                    return Ok(result.Data);
+                }
+                return BadRequest(result.ErrorMessage);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] ARTCreateModel model)
         {
