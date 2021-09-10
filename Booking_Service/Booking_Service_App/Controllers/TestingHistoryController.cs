@@ -79,11 +79,32 @@ namespace Booking_Service_App.Controllers
         }
 
         [HttpGet("LayTest")]
-        public async Task<IActionResult> Get(string employeeId, string employeeName, string customer, Guid? customerId = null)
+        public async Task<IActionResult> Get(
+            string employeeId, string employeeName, string customer, Guid? customerId = null, int? pageIndex=0,int? pageSize =0)
         {
             try
             {
-                var result = await _testingHistoryService.GetLayTest(employeeId, employeeName, customer, customerId.HasValue?customerId.Value: customerId);
+                var result = await _testingHistoryService
+                    .GetLayTest(employeeId, employeeName, customer, customerId.HasValue?customerId.Value: customerId,pageIndex,pageSize);
+                if (result.Succeed)
+                {
+                    return Ok(result.Data);
+                }
+                return BadRequest(result.ErrorMessage);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpGet("LayTestByEmployee")]
+        public async Task<IActionResult> GetLayTestByEmployee(string customerName, Guid? customerId = null)
+        {
+            try
+            {
+                var emp = User.Claims.Where(cl => cl.Type == "Id").FirstOrDefault().Value;
+                var result = await _testingHistoryService.GetLayTestCustomer(emp, customerName, customerId.HasValue?customerId.Value:customerId);
                 if (result.Succeed)
                 {
                     return Ok(result.Data);
@@ -97,12 +118,12 @@ namespace Booking_Service_App.Controllers
         }
 
         [HttpGet("LayTestByCustomer")]
-        public async Task<IActionResult> GetLayTestByCustomer(string customerName, Guid? customerId = null)
+        public async Task<IActionResult> GetLayTestByCustomer(int? pageIndex = 0 , int? pageSize = 0)
         {
             try
             {
                 var emp = User.Claims.Where(cl => cl.Type == "Id").FirstOrDefault().Value;
-                var result = await _testingHistoryService.GetLayTestCustomer(emp, customerName, customerId.HasValue?customerId.Value:customerId);
+                var result = await _testingHistoryService.GetLayTestByCustomerId(emp,pageIndex,pageSize);
                 if (result.Succeed)
                 {
                     return Ok(result.Data);

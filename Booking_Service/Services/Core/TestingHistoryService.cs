@@ -16,9 +16,11 @@ namespace Services.Core
         Task<ResultModel> Add(TestingHistoryCreateModel model);
         Task<ResultModel> GetById(Guid id);
         Task<ResultModel> CreateLayTest(LayTestCreateModel model);
-        Task<ResultModel> GetLayTest(string employeeId,string employeeName,string customer, Guid? customerId = null);
+        Task<ResultModel> GetLayTest(string employeeId,string employeeName,string customer, Guid? customerId = null, int? pageIndex = 0, int? pageSize =0);
 
         Task<ResultModel> GetLayTestCustomer(string emoployId ,string customer, Guid? customerId = null);
+
+        Task<ResultModel> GetLayTestByCustomerId(string customerId,int? pageIndex=0,int? pageSize=0);
         Task<ResultModel> GetLayTestById(Guid laytestId);
         Task<ResultModel> UpdateLayTest(LayTestUpdateModel model);
     }
@@ -106,7 +108,8 @@ namespace Services.Core
         #endregion
 
         #region GetLayTest
-        public async Task<ResultModel> GetLayTest(string employeeId, string employeeName, string customerName, Guid? customerId = null)
+        public async Task<ResultModel> GetLayTest(
+            string employeeId, string employeeName, string customerName, Guid? customerId = null,int? pageIndex =0,int?pageSize = 0)
         {
             var result = new ResultModel();
             try
@@ -146,9 +149,20 @@ namespace Services.Core
                 }
 
 
-                var rs = await _context.TestingHistory.FindAsync(basefilter);
-                var list = await rs.ToListAsync();
-                result.Data = _mapper.Map<List<TestingHistory>, List<LayTestViewModel>>(list);
+                var data = _context.TestingHistory.Find(basefilter);
+                PagingModel paging = new PagingModel(pageIndex ?? 0, pageSize ?? 0, data.CountDocuments());
+
+                var list = await data
+                    .Skip((paging.PageIndex - 1) * paging.PageSize)
+                    .Limit(paging.PageSize)
+                    .ToListAsync();
+
+                paging.Data = _mapper.Map<List<TestingHistory>, List<LayTestViewModel>>(list);
+
+
+                //                var rs = await _context.TestingHistory.FindAsync(basefilter);
+                //                var list = await rs.ToListAsync();
+                result.Data = paging;
                 result.Succeed = true;
             }
             catch (Exception e)
@@ -189,6 +203,7 @@ namespace Services.Core
             {
                 var basefilter = Builders<TestingHistory>.Filter.Eq(x => x.CDO_Employee.EmployeeId,emoployId);
 
+
                 if (!string.IsNullOrEmpty(customer))
                 {
                     var customerNameFilter = Builders<TestingHistory>.Filter.Eq(x => x.Customer.Fullname, customer);
@@ -214,6 +229,39 @@ namespace Services.Core
             return result;
         }
         #endregion
+
+        public async Task<ResultModel> GetLayTestByCustomerId(string customerId, int? pageIndex = 0, int? pageSize = 0)
+        {
+            var result = new ResultModel();
+            try
+            {
+                
+
+                Guid id = new Guid(customerId);
+                var basefilter = Builders<TestingHistory>.Filter.Eq(x => x.Customer.Id, id);
+
+                var data = _context.TestingHistory.Find(basefilter);
+                PagingModel paging = new PagingModel(pageIndex ?? 0, pageSize ?? 0, data.CountDocuments());
+
+                var list = await data
+                    .Skip((paging.PageIndex - 1) * paging.PageSize)
+                    .Limit(paging.PageSize)
+                    .ToListAsync();
+//
+//                var rs = await _context.TestingHistory.FindAsync(basefilter);
+//                var list = await rs.ToListAsync();
+
+                paging.Data = _mapper.Map<List<TestingHistory>, List<LayTestViewModel>>(list);
+                result.Data = paging;
+                result.Succeed = true;
+            }
+            catch (Exception e)
+            {
+                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+
+            return result;
+        }
 
         #region UpdateLayTest
         public async Task<ResultModel> UpdateLayTest(LayTestUpdateModel model)
