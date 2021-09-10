@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using Data.Constants;
 using Data.DataAccess;
 using Data.Enums;
 using Data.MongoCollections;
 using Data.ViewModels;
 using MongoDB.Driver;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Services.Core
 {
@@ -28,11 +32,14 @@ namespace Services.Core
     {
         private ApplicationDbContext _context;
         private IMapper _mapper;
+        private readonly IHttpClientFactory _clientFactory;
 
-        public TestingHistoryService(ApplicationDbContext context, IMapper mapper)
+
+        public TestingHistoryService(ApplicationDbContext context, IMapper mapper, IHttpClientFactory clientFactory)
         {
             _context = context;
             _mapper = mapper;
+            _clientFactory = clientFactory;
         }
 
         // TESTING_HISTORY
@@ -45,12 +52,53 @@ namespace Services.Core
             {
                 var data = _mapper.Map<TestingHistoryCreateModel, TestingHistory>(model);
                 await _context.TestingHistory.InsertOneAsync(data);
-                result.Data = data.Id;
-                result.Succeed = true;
+
+
+                // Send data to DHealth
+
+                ResultMessage rsMess = new ResultMessage();
+                switch (model.Result.Type)
+                {
+                    case TestingType.VIRAL_LOAD:
+                    {
+                        rsMess = PushViralLoad(model).Result;
+                        
+                        break;
+                    }
+                    case TestingType.CD4:
+                    {
+                        rsMess = PushCD4(model).Result;
+                        break;
+                    }
+                    case TestingType.RECENCY:
+                    {
+                        rsMess = PushRecency(model).Result;
+                        break;
+                    }
+                    case TestingType.HTS_POS:
+                    {
+                        rsMess = PushHTS_POS(model).Result;
+                        break;
+                    }
+                    default:
+                    {
+                        rsMess.Response = "Invalid Type";
+                        break;
+                    }
+                }
+                if (rsMess.IsSuccessStatus)
+                {
+                    result.Data = rsMess.Response;
+                    result.Succeed = true;
+                }
+                else
+                {
+                    result.ResponseFailed = rsMess.Response;
+                }
             }
             catch (Exception e)
             {
-                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+                result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
             }
             return result;
         }
@@ -230,6 +278,7 @@ namespace Services.Core
         }
         #endregion
 
+        #region GetLayTestByCustomer
         public async Task<ResultModel> GetLayTestByCustomerId(string customerId, int? pageIndex = 0, int? pageSize = 0)
         {
             var result = new ResultModel();
@@ -262,6 +311,7 @@ namespace Services.Core
 
             return result;
         }
+        #endregion
 
         #region UpdateLayTest
         public async Task<ResultModel> UpdateLayTest(LayTestUpdateModel model)
@@ -300,6 +350,116 @@ namespace Services.Core
 
             return result;
         }
+        #endregion
+
+
+        // Comunication
+
+        #region ComunicationDhealth
+
+        public async Task<ResultMessage> PushViralLoad(TestingHistoryCreateModel model)
+        {
+            var result = new ResultMessage();
+            try
+            {
+                var viralLoad = new ViralLoadPushModel
+                {
+                    userId = model.Customer.Id.ToString(),
+                    testDateTLVR = (long) model.Result.TakenDate,
+                    testResultTLVR = model.Result.ViralLoad.ToString()
+                };
+                var content = new StringContent(JsonConvert.SerializeObject(viralLoad), Encoding.UTF8, "application/json");
+                var client = _clientFactory.CreateClient();
+                var response = await client.PostAsync(UriCommunicationDhealth.VIRAL_LOAD, content);
+                result.IsSuccessStatus = response.IsSuccessStatusCode;
+                result.Response = await response.Content.ReadAsStringAsync();
+            }
+            catch (Exception e)
+            {
+                result.Response = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+
+            return result;
+        }
+
+        public async Task<ResultMessage> PushCD4(TestingHistoryCreateModel model)
+        {
+            var result = new ResultMessage();
+            try
+            {
+                var cd4 = new CD4PushModel
+                {
+                    userId = model.Customer.Id.ToString(),
+                    testDateCD4= (long)model.Result.TakenDate,
+                    testResultCD4 = model.Result.ResultTesting
+                };
+                var content = new StringContent(JsonConvert.SerializeObject(cd4), Encoding.UTF8, "application/json");
+                var client = _clientFactory.CreateClient();
+                var response = await client.PostAsync(UriCommunicationDhealth.CD4, content);
+                result.IsSuccessStatus = response.IsSuccessStatusCode;
+                result.Response = await response.Content.ReadAsStringAsync();
+            }
+            catch (Exception e)
+            {
+                result.Response = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+
+            return result;
+        }
+
+        public async Task<ResultMessage> PushRecency(TestingHistoryCreateModel model)
+        {
+            var result = new ResultMessage();
+            try
+            {
+                var cd4 = new RecencyPushModel()
+                {
+                    userId = model.Customer.Id.ToString(),
+                    testDateRecency = (long)model.Result.TakenDate,
+                    testResultRecency = model.Result.ResultTesting
+                };
+                var content = new StringContent(JsonConvert.SerializeObject(cd4), Encoding.UTF8, "application/json");
+                var client = _clientFactory.CreateClient();
+                var response = await client.PostAsync(UriCommunicationDhealth.RECENCY, content);
+                result.IsSuccessStatus = response.IsSuccessStatusCode;
+                result.Response = await response.Content.ReadAsStringAsync();
+            }
+            catch (Exception e)
+            {
+                result.Response = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+
+            return result;
+        }
+
+
+        public async Task<ResultMessage> PushHTS_POS(TestingHistoryCreateModel model)
+        {
+            var result = new ResultMessage();
+            try
+            {
+                var hts_pos = new HTS_POSPushModel()
+                {
+                    userId = model.Customer.Id.ToString(),
+                    ngayLayMauXetNghiemKhangDinhHIV = (long)model.Result.TakenDate,
+                    donViLayMauXetNghiemKhangDinh = model.Facility.Name,
+                    ketQuaXetNghiemKhangDinh = model.Result.ResultTesting,
+                    maXetNghiemKhangDinhHIV = model.Result.Code
+                };
+                var content = new StringContent(JsonConvert.SerializeObject(hts_pos), Encoding.UTF8, "application/json");
+                var client = _clientFactory.CreateClient();
+                var response = await client.PostAsync(UriCommunicationDhealth.HTS_POST, content);
+                result.IsSuccessStatus = response.IsSuccessStatusCode;
+                result.Response = await response.Content.ReadAsStringAsync();
+            }
+            catch (Exception e)
+            {
+                result.Response = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+
+            return result;
+        }
+
         #endregion
 
 

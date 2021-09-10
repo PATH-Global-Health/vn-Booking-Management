@@ -37,7 +37,14 @@ namespace Data.Enums
         POSITIVE = 1,
         NEGATIVE = -1,
         NO_RESULT = 0
-    } 
+    }
+
+    public enum TypeHTS_POS
+    {
+        PREP =1,
+        ARV =2
+
+    }
 
 
 

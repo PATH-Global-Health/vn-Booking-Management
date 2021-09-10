@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System;
+using AutoMapper;
 using Data.MongoCollections;
 using Data.ViewModels;
 using MongoDB.Bson;
@@ -75,6 +76,18 @@ namespace Services.MappingProfile
 
             CreateMap<ARTCreateModel, ART>();
             CreateMap<ART, ARTViewModel>();
+
+
+            //DHealth
+
+            CreateMap<TX_ML_Model, TX_MLPushModel>()
+                .ForMember(p=> p.reportDate,
+                    m=>m.MapFrom(mf=>mf.ReportDate.ToUniversalTime()
+                    .Subtract(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc))
+                    .TotalMilliseconds))
+                .ForMember(p => p.thoiDiemTreHen, m => m.MapFrom(mf => mf.TimingLate))
+                .ForMember(p => p.tinhTrangDieuTri, m => m.MapFrom(mf => mf.Status))
+                .ForMember(p => p.LoHenDieuTri, m => m.MapFrom(mf => mf.IsLate));
 
 
         }

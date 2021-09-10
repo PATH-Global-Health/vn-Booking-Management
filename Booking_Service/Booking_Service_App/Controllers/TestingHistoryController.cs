@@ -50,7 +50,7 @@ namespace Booking_Service_App.Controllers
                 {
                     return Ok(result.Data);
                 }
-                return BadRequest(result.ErrorMessage);
+                return BadRequest(result.ResponseFailed);
             }
             catch (Exception e)
             {

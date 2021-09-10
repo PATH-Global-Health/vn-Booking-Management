@@ -29,6 +29,7 @@ namespace Booking_Service_App
             services.ConfigCors();
             services.ConfigSwagger();
             services.AddAutoMapper(typeof(MapperProfile));
+            services.AddHttpClient();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
