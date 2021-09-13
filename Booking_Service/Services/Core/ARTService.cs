@@ -107,7 +107,7 @@ namespace Services.Core
                 {
                     donViDieuTriHIV = model.Facility.Name,
                     maSoDieuTriHIV = model.ART_Infomation.Code,
-                    userId = model.Customer.Id.ToString(),
+                    userId = model.Customer.ExternalId,
                     ngayBatDauDieuTriHIV = model.ART_Infomation.StartDate.
                         ToUniversalTime()
                         .Subtract(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc))
@@ -134,7 +134,7 @@ namespace Services.Core
             {
                 var tx_ml = new TX_MLInfoModel
                 {
-                    userId = model.Customer.Id.ToString(),
+                    userId = model.Customer.ExternalId,
                     type = Enum.GetName(typeof(TypeHTS_POS), 2),
                     thongTinLoHenDieuTri = _mapper.Map<List<TX_ML_Model>, List<TX_MLPushModel>>(model.TX_ML)
                 };

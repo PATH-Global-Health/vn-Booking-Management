@@ -364,7 +364,7 @@ namespace Services.Core
             {
                 var viralLoad = new ViralLoadPushModel
                 {
-                    userId = model.Customer.Id.ToString(),
+                    userId = model.Customer.ExternalId,
                     testDateTLVR = (long) model.Result.TakenDate,
                     testResultTLVR = model.Result.ViralLoad.ToString()
                 };
@@ -389,7 +389,7 @@ namespace Services.Core
             {
                 var cd4 = new CD4PushModel
                 {
-                    userId = model.Customer.Id.ToString(),
+                    userId = model.Customer.ExternalId,
                     testDateCD4= (long)model.Result.TakenDate,
                     testResultCD4 = model.Result.ResultTesting
                 };
@@ -414,7 +414,7 @@ namespace Services.Core
             {
                 var cd4 = new RecencyPushModel()
                 {
-                    userId = model.Customer.Id.ToString(),
+                    userId = model.Customer.ExternalId,
                     testDateRecency = (long)model.Result.TakenDate,
                     testResultRecency = model.Result.ResultTesting
                 };
@@ -440,7 +440,7 @@ namespace Services.Core
             {
                 var hts_pos = new HTS_POSPushModel()
                 {
-                    userId = model.Customer.Id.ToString(),
+                    userId = model.Customer.ExternalId,
                     ngayLayMauXetNghiemKhangDinhHIV = (long)model.Result.TakenDate,
                     donViLayMauXetNghiemKhangDinh = model.Facility.Name,
                     ketQuaXetNghiemKhangDinh = model.Result.ResultTesting,

@@ -62,6 +62,8 @@ namespace Data.ViewModels
         public string Nation { get; set; }
         public string PassportNumber { get; set; }
         public string VaccinationCode { get; set; }
+        public string ExternalId { get; set; }
+
     }
 
     public class ContactModel
