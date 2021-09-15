@@ -80,6 +80,12 @@ namespace Services.Core
                         rsMess = PushHTS_POS(model).Result;
                         break;
                     }
+                    case TestingType.LAY_TEST:
+                    {
+                        rsMess.IsSuccessStatus = true;
+                        rsMess.Response = "Successfuly";
+                        break;
+                    }
                     default:
                     {
                         rsMess.Response = "Invalid Type";
@@ -441,7 +447,10 @@ namespace Services.Core
                 var hts_pos = new HTS_POSPushModel()
                 {
                     userId = model.Customer.ExternalId,
-                    ngayLayMauXetNghiemKhangDinhHIV = (long)model.Result.TakenDate,
+                    ngayLayMauXetNghiemKhangDinhHIV = model.Result.TestingDate
+                        .ToUniversalTime()
+                        .Subtract(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc))
+                        .TotalMilliseconds,
                     donViLayMauXetNghiemKhangDinh = model.Facility.Name,
                     ketQuaXetNghiemKhangDinh = model.Result.ResultTesting,
                     maXetNghiemKhangDinhHIV = model.Result.Code
