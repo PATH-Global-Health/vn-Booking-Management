@@ -68,8 +68,9 @@ namespace Services.MappingProfile
                 .ForMember(m => m.Facility, e => e.Ignore());
 
             CreateMap<TestingHistory, LayTestViewModel>();
-            CreateMap<TestingHistory, TestingHistoryViewModel>();
+                
 
+            CreateMap<TestingHistory, TestingHistoryViewModel>();
 
             CreateMap<PrEPCreateModel, PrEP>();
             CreateMap<PrEP, PrEPViewModel>();

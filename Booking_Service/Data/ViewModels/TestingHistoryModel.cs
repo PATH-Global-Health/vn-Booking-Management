@@ -68,7 +68,7 @@ namespace Data.ViewModels
         public int ExaminationForm { get; set; }
         public string ReceptionId { get; set; }
         public double TakenDate { get; set; }  // Ngày lấy mẫu
-        public DateTime TestingDate { get; set; } //   Ngày làm xét nghiệm
+        public string TestingDate { get; set; } //   Ngày làm xét nghiệm
         public string ResultDate { get; set; } // Ngày có kết quả
         public string ResultTesting { get; set; } // Kết quả cuối cùng ( null nếu type = LayTEST)
         public double ViralLoad { get; set; }   // Lượng Virus (null nếu type != LayTest)

@@ -447,7 +447,7 @@ namespace Services.Core
                 var hts_pos = new HTS_POSPushModel()
                 {
                     userId = model.Customer.ExternalId,
-                    ngayLayMauXetNghiemKhangDinhHIV = model.Result.TestingDate
+                    ngayLayMauXetNghiemKhangDinhHIV = DateTime.Parse(model.Result.TestingDate) 
                         .ToUniversalTime()
                         .Subtract(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc))
                         .TotalMilliseconds,
