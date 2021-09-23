@@ -43,7 +43,14 @@ namespace Data.Enums
     {
         PREP =1,
         ARV =2
+    }
 
+    public enum SesstionType : int
+    {
+        LAY_TEST = 1,
+        RECENCY = 2,
+        PrEP = 3,
+        ART = 4
     }
 
 

@@ -28,9 +28,11 @@ namespace Services.MappingProfile
             CreateMap<Result, ResultTestingModel>().ReverseMap();
             CreateMap<CDO_Employee, CDO_EmployeeModel>().ReverseMap();
             CreateMap<PrEP_Infomation, PrEP_InfomationModel>().ReverseMap();
-
             CreateMap<ART_Infomation, ART_InfomationModel>().ReverseMap();
             CreateMap<TX_ML, TX_ML_Model>().ReverseMap();
+            //-------------------
+            CreateMap<Session, SessionModel>().ReverseMap();
+            CreateMap<SessionContent, SessionContentModel>().ReverseMap();
 
 
 
@@ -90,6 +92,9 @@ namespace Services.MappingProfile
                 .ForMember(p => p.tinhTrangDieuTri, m => m.MapFrom(mf => mf.Status))
                 .ForMember(p => p.LoHenDieuTri, m => m.MapFrom(mf => mf.IsLate));
 
+            // session
+            CreateMap<WorkingSessionCreateModel, WorkingSession>();
+            CreateMap<WorkingSession, WorkingSessionViewModel>();
 
         }
     }

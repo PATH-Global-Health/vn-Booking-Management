@@ -58,6 +58,7 @@ namespace Booking_Service_App.Extensions
             services.AddScoped<ITestingHistoryService, TestingHistoryService>();
             services.AddScoped<IPrEPService, PrEPService>();
             services.AddScoped<IARTService, ARTService>();
+            services.AddScoped<IWorkingSessionService, WorkingSessionService>();
 
         }
     }
