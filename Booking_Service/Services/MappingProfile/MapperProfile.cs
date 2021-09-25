@@ -95,6 +95,9 @@ namespace Services.MappingProfile
             // session
             CreateMap<WorkingSessionCreateModel, WorkingSession>();
             CreateMap<WorkingSession, WorkingSessionViewModel>();
+            CreateMap<WorkingSessionCreateModel, TestingHistory>();
+            CreateMap<WorkingSessionCreateModel, PrEP>();
+            CreateMap<WorkingSessionCreateModel, ART>();
 
         }
     }

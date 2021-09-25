@@ -42,6 +42,7 @@ namespace Data.ViewModels
 
     public class SessionModel
     {
+        public DateTime WorkingDate { get; set; }
         public DateTime TimeStart { get; set; }
         public DateTime TimeEnd { get; set; }
     }

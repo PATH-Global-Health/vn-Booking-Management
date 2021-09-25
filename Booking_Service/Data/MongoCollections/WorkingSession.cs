@@ -22,7 +22,7 @@ namespace Data.MongoCollections
 
     public class Session
     {
-
+        public DateTime WorkingDate { get; set; }
         public DateTime TimeStart { get; set; }
         public DateTime TimeEnd { get; set; }
     }

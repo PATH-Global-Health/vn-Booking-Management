@@ -53,6 +53,4 @@ namespace Data.Enums
         ART = 4
     }
 
-
-
 }

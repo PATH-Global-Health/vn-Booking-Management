@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Data.DataAccess;
+using Data.Enums;
 using Data.MongoCollections;
 using Data.ViewModels;
 using MongoDB.Driver;
@@ -37,13 +38,55 @@ namespace Services.Core
                     throw new Exception("TimeEnd must greater than TimeStart");
                 }
                 var data = _mapper.Map<WorkingSessionCreateModel, WorkingSession>(model);
+                if (!model.SessionContent.IsConsulstation)
+                {
+                    switch (model.SessionContent.Type)
+                    {
+                        case SesstionType.LAY_TEST:
+                        {
+                            // add laytest to history and assign laytestId to resultTestingId
+                            var layTest = _mapper.Map<WorkingSessionCreateModel, TestingHistory>(model);
+                            layTest.Result = new Result
+                            {
+                                Type = TestingType.LAY_TEST,
+                                ResultTesting = model.SessionContent.Result,
+                                Code = model.SessionContent.Code
+                            };
+                            data.SessionContent.ResultTestingId = layTest.Id.ToString();
+                            await _context.TestingHistory.InsertOneAsync(layTest);
+                            break;
+                        }
+                        case SesstionType.RECENCY:
+                        {
+                            var recency = _mapper.Map<WorkingSessionCreateModel, TestingHistory>(model);
+                            recency.Result = new Result
+                            {
+                                Type = TestingType.RECENCY,
+                                ResultTesting = model.SessionContent.Result,
+                            };
+                            data.SessionContent.ResultTestingId = recency.Id.ToString();
+                            await _context.TestingHistory.InsertOneAsync(recency);
+                            break;
+                        }
+                        case SesstionType.PrEP:
+                        {
+                            var prEP = _mapper.Map<WorkingSessionCreateModel, PrEP>(model);
+                            data.SessionContent.ResultTestingId = prEP.Id.ToString();
+                            await _context.PrEP.InsertOneAsync(prEP);
+                            break;
+                        }
+                        case SesstionType.ART:
+                        {
+                            var art = _mapper.Map<WorkingSessionCreateModel, ART>(model);
+                            data.SessionContent.ResultTestingId = art.Id.ToString();
+                            await _context.ART.InsertOneAsync(art);
+                            break;
+                        }
+                    }
+                }
+
                 await _context.WorkingSession.InsertOneAsync(data);
-
-
-
-
-
-                result.Data = _mapper.Map<WorkingSession, WorkingSessionViewModel>(data);
+                result.Data = data;
                 result.Succeed = true;
             }
             catch (Exception e)
