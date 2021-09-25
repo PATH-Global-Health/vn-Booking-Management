@@ -38,6 +38,11 @@ namespace Services.Core
                 }
                 var data = _mapper.Map<WorkingSessionCreateModel, WorkingSession>(model);
                 await _context.WorkingSession.InsertOneAsync(data);
+
+
+
+
+
                 result.Data = _mapper.Map<WorkingSession, WorkingSessionViewModel>(data);
                 result.Succeed = true;
             }

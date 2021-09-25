@@ -45,6 +45,7 @@ namespace Services.Core
 
                 ResultMessage rsMess = new ResultMessage();
 
+
                 if (model.TX_ML.Count == 0 || model.TX_ML == null)
                 {
                     rsMess = PushART(model).Result;
@@ -53,6 +54,8 @@ namespace Services.Core
                 {
                     rsMess = PushTX_ML(model).Result;
                 }
+
+
 
                 if (rsMess.IsSuccessStatus)
                 {
