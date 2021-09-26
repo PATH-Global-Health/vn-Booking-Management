@@ -12,6 +12,7 @@ using Data.ViewModels;
 using MongoDB.Driver;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Services.RabbitMQ;
 
 namespace Services.Core
 {
@@ -21,9 +22,7 @@ namespace Services.Core
         Task<ResultModel> GetById(Guid id);
         Task<ResultModel> CreateLayTest(LayTestCreateModel model);
         Task<ResultModel> GetLayTest(string employeeId,string employeeName,string customer, Guid? customerId = null, int? pageIndex = 0, int? pageSize =0);
-
         Task<ResultModel> GetLayTestCustomer(string emoployId ,string customer, Guid? customerId = null);
-
         Task<ResultModel> GetLayTestByCustomerId(string customerId,int? pageIndex=0,int? pageSize=0);
         Task<ResultModel> GetLayTestById(Guid laytestId);
         Task<ResultModel> UpdateLayTest(LayTestUpdateModel model);
@@ -33,13 +32,15 @@ namespace Services.Core
         private ApplicationDbContext _context;
         private IMapper _mapper;
         private readonly IHttpClientFactory _clientFactory;
+        private IProducerCheckExternalId _producer;
 
 
-        public TestingHistoryService(ApplicationDbContext context, IMapper mapper, IHttpClientFactory clientFactory)
+        public TestingHistoryService(ApplicationDbContext context, IMapper mapper, IHttpClientFactory clientFactory, IProducerCheckExternalId producer)
         {
             _context = context;
             _mapper = mapper;
             _clientFactory = clientFactory;
+            _producer = producer;
         }
 
         // TESTING_HISTORY
@@ -53,16 +54,49 @@ namespace Services.Core
                 var data = _mapper.Map<TestingHistoryCreateModel, TestingHistory>(model);
                 await _context.TestingHistory.InsertOneAsync(data);
 
-
                 // Send data to DHealth
+                if (!string.IsNullOrEmpty(model.Customer.ExternalId))
+                {
+                    var resultCheckExternalId = JsonConvert.DeserializeObject< ResultModel >(SyncExternalId(model.Customer.ExternalId));
+                    if (!resultCheckExternalId.Succeed)
+                    {
+                        throw new Exception("Invalid ExternalId");
+                    }
+                    ResultMessage mess = SendDataToDHealth(model);
+                    if (mess.IsSuccessStatus)
+                    {
+                        result.Data = mess.Response;
+                        result.Succeed = true;
+                    }
+                    else
+                    {
+                        result.ResponseFailed = mess.Response;
+                    }
+                }
+                else
+                {
+                    result.Data = data;
+                    result.Succeed = true;
+                }
+            }
+            catch (Exception e)
+            {
+                result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+            return result;
+        }
 
-                ResultMessage rsMess = new ResultMessage();
+
+        public ResultMessage SendDataToDHealth(TestingHistoryCreateModel model)
+        {
+            ResultMessage rsMess = new ResultMessage();
+            try
+            {
                 switch (model.Result.Type)
                 {
                     case TestingType.VIRAL_LOAD:
                     {
                         rsMess = PushViralLoad(model).Result;
-                        
                         break;
                     }
                     case TestingType.CD4:
@@ -92,21 +126,39 @@ namespace Services.Core
                         break;
                     }
                 }
-                if (rsMess.IsSuccessStatus)
-                {
-                    result.Data = rsMess.Response;
-                    result.Succeed = true;
-                }
-                else
-                {
-                    result.ResponseFailed = rsMess.Response;
-                }
             }
             catch (Exception e)
             {
-                result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+                rsMess.Response = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
             }
+            return rsMess;
+        }
+
+        private string SyncExternalId(string externalId)
+        {
+            // to json
+            var message = JsonConvert.SerializeObject(externalId);
+            //sync instance with MSSQL and api
+            var response = _producer.Call(message, RabbitQueue.ExistExternalIDQueue); // call and wait for response
+            return response;
+        }
+
+
+        public ResultModel TestRabit(string model)
+        {
+            var result = new ResultModel();
+            try
+            {
+                result.Data = SyncExternalId(model);
+                result.Succeed = true;
+            }
+            catch (Exception e)
+            {
+                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+
             return result;
+
         }
         #endregion
 
