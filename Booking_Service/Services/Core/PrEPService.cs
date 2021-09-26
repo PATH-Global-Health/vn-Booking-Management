@@ -12,6 +12,7 @@ using Data.MongoCollections;
 using Data.ViewModels;
 using MongoDB.Driver;
 using Newtonsoft.Json;
+using Services.RabbitMQ;
 
 namespace Services.Core
 {
@@ -20,6 +21,7 @@ namespace Services.Core
     {
         Task<ResultModel> Add(PrEPCreateModel model);
         Task<ResultModel> GetByCustomerId(Guid customerId);
+
     }
 
     public class PrEPService: IPrEPService
@@ -27,13 +29,14 @@ namespace Services.Core
         private ApplicationDbContext _context;
         private IMapper _mapper;
         private readonly IHttpClientFactory _clientFactory;
+        private IProducerCheckExternalId _producer;
 
-        public PrEPService(ApplicationDbContext context, IMapper mapper, IHttpClientFactory clientFactory)
+        public PrEPService(ApplicationDbContext context, IMapper mapper, IHttpClientFactory clientFactory, IProducerCheckExternalId producer)
         {
             _context = context;
             _mapper = mapper;
             _clientFactory = clientFactory;
-
+            _producer = producer;
         }
 
         #region Add
@@ -45,27 +48,28 @@ namespace Services.Core
             {
                 var data = _mapper.Map<PrEPCreateModel, PrEP>(model);
                 await _context.PrEP.InsertOneAsync(data);
-
-
-                ResultMessage rsMess = new ResultMessage();
-
-                if (model.TX_ML.Count ==0 || model.TX_ML == null)
+                if (!string.IsNullOrEmpty(model.Customer.ExternalId))
                 {
-                    rsMess = PushPrEP(model).Result;
+                    var resultCheckExternalId = JsonConvert.DeserializeObject<ResultModel>(SyncExternalId(model.Customer.ExternalId));
+                    if (!resultCheckExternalId.Succeed)
+                    {
+                        throw new Exception("Invalid ExternalId");
+                    }
+                    ResultMessage mess = SendDataToDHealth(model);
+                    if (mess.IsSuccessStatus)
+                    {
+                        result.Data = mess.Response;
+                        result.Succeed = true;
+                    }
+                    else
+                    {
+                        result.ResponseFailed = mess.Response;
+                    }
                 }
                 else
                 {
-                    rsMess = PushTX_ML(model).Result;
-                }
-
-                if (rsMess.IsSuccessStatus)
-                {
-                    result.Data = rsMess.Response;
+                    result.Data = data;
                     result.Succeed = true;
-                }
-                else
-                {
-                    result.ResponseFailed = rsMess.Response;
                 }
             }
             catch (Exception e)
@@ -75,7 +79,35 @@ namespace Services.Core
             return result;
         }
 
+        public ResultMessage SendDataToDHealth(PrEPCreateModel model)
+        {
+            ResultMessage rsMess = new ResultMessage();
+            try
+            {
+                if (model.TX_ML.Count == 0 || model.TX_ML == null)
+                {
+                    rsMess = PushPrEP(model).Result;
+                }
+                else
+                {
+                    rsMess = PushTX_ML(model).Result;
+                }
+            }
+            catch (Exception e)
+            {
+                rsMess.Response = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+            return rsMess;
+        }
 
+        private string SyncExternalId(string externalId)
+        {
+            // to json
+            var message = JsonConvert.SerializeObject(externalId);
+            //sync instance with MSSQL and api
+            var response = _producer.Call(message, RabbitQueue.ExistExternalIDQueue); // call and wait for response
+            return response;
+        }
         #endregion
 
         #region GetByCustomerId

@@ -54,7 +54,7 @@ namespace Services.Core
                 var data = _mapper.Map<TestingHistoryCreateModel, TestingHistory>(model);
                 await _context.TestingHistory.InsertOneAsync(data);
 
-                // Send data to DHealth
+                // Send data to DHealth if externalId != null
                 if (!string.IsNullOrEmpty(model.Customer.ExternalId))
                 {
                     var resultCheckExternalId = JsonConvert.DeserializeObject< ResultModel >(SyncExternalId(model.Customer.ExternalId));
