@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Booking_Service_App.Extensions;
+using Data.Enums;
 using Data.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Services.Core;
@@ -43,6 +44,38 @@ namespace Booking_Service_App.Controllers
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] TestingHistoryCreateModel model)
         {
+            if (model.Result.Type == TestingType.LAY_TEST)
+            {
+
+                if (string.IsNullOrEmpty(model.Result.PublicExaminationOrder))
+                {
+                    ModelState.AddModelError("PublicExaminationOrder", "PublicExaminationOrder is required.");
+                }
+                if (string.IsNullOrEmpty(model.Result.Code))
+                {
+                    ModelState.AddModelError("Code", "Code is required.");
+                }
+                if (model.Result.ExaminationForm < 0 || model.Result.ExaminationForm > 2)
+                {
+                    ModelState.AddModelError("ExaminationForm", "Must 0 -> 2");
+                }
+                if (string.IsNullOrEmpty(model.Result.ReceptionId))
+                {
+                    ModelState.AddModelError("ReceptionId", "ReceptionId is required.");
+                }
+                if (model.Result.HIVPublicExaminationDate <=0)
+                {
+                    ModelState.AddModelError("HIVPublicExaminationDate", "HIVPublicExaminationDate must be greater than 0.");
+                }
+                if (!ModelState.IsValid)
+                    return BadRequest(new
+                {
+                    StatusCode = 400,
+                    Message=ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage),
+                    Error = "Bad request",
+                });
+
+            }
             try
             {
                 var result = await _testingHistoryService.Add(model);

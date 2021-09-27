@@ -98,6 +98,7 @@ namespace Services.MappingProfile
             CreateMap<WorkingSessionCreateModel, TestingHistory>();
             CreateMap<WorkingSessionCreateModel, PrEP>();
             CreateMap<WorkingSessionCreateModel, ART>();
+            CreateMap<ResultTestingValidationModel, ResultTestingModel>();
 
         }
     }
