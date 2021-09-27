@@ -47,6 +47,7 @@ namespace Data.ViewModels
         public DateTime ReportDate { get; set; }
         public string TimingLate { get; set; }
         public string Status { get; set; }
+        [Range(0,1)]
         public int IsLate { get; set; }
     }
 }

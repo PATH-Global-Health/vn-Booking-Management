@@ -100,6 +100,16 @@ namespace Services.MappingProfile
             CreateMap<WorkingSessionCreateModel, ART>();
             CreateMap<ResultTestingValidationModel, ResultTestingModel>();
 
+
+
+
+            //--------------------------------------- Validation
+            CreateMap<FacilityLayTestModel, FacilityModel>().ReverseMap();
+            CreateMap<ResultTestingLayTestModel, ResultTestingModel>().ReverseMap();
+            CreateMap<CDO_EmployeeLayTestModel, CDO_EmployeeModel>().ReverseMap();
+            CreateMap<CustomerLayTestModel, CustomerModel>().ReverseMap();
+            CreateMap<LayTestValidationDHealth, TestingHistory>();
+            CreateMap<LayTestValidationDHealth, TestingHistoryCreateModel>();
         }
     }
 }

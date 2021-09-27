@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Booking_Service_App.Extensions;
 using Data.Enums;
 using Data.ViewModels;
@@ -18,9 +19,11 @@ namespace Booking_Service_App.Controllers
     public class TestingHistoryController : ControllerBase
     {
         private ITestingHistoryService _testingHistoryService;
-        public TestingHistoryController(ITestingHistoryService testingHistoryService)
+        private IMapper _mapper;
+        public TestingHistoryController(ITestingHistoryService testingHistoryService, IMapper mapper)
         {
             _testingHistoryService = testingHistoryService;
+            _mapper = mapper;
         }
 
         [HttpGet("{id}")]
@@ -44,44 +47,36 @@ namespace Booking_Service_App.Controllers
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] TestingHistoryCreateModel model)
         {
-            if (model.Result.Type == TestingType.LAY_TEST)
-            {
-
-                if (string.IsNullOrEmpty(model.Result.PublicExaminationOrder))
-                {
-                    ModelState.AddModelError("PublicExaminationOrder", "PublicExaminationOrder is required.");
-                }
-                if (string.IsNullOrEmpty(model.Result.Code))
-                {
-                    ModelState.AddModelError("Code", "Code is required.");
-                }
-                if (model.Result.ExaminationForm < 0 || model.Result.ExaminationForm > 2)
-                {
-                    ModelState.AddModelError("ExaminationForm", "Must 0 -> 2");
-                }
-                if (string.IsNullOrEmpty(model.Result.ReceptionId))
-                {
-                    ModelState.AddModelError("ReceptionId", "ReceptionId is required.");
-                }
-                if (model.Result.HIVPublicExaminationDate <=0)
-                {
-                    ModelState.AddModelError("HIVPublicExaminationDate", "HIVPublicExaminationDate must be greater than 0.");
-                }
-                if (!ModelState.IsValid)
-                    return BadRequest(new
-                {
-                    StatusCode = 400,
-                    Message=ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage),
-                    Error = "Bad request",
-                });
-
-            }
             try
             {
                 var result = await _testingHistoryService.Add(model);
                 if (result.Succeed)
                 {
                     return Ok(result.Data);
+                }
+                return BadRequest(result.ResponseFailed);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPost("AddLayTestDH")]
+        public async Task<IActionResult> AddLayTestDH([FromBody] LayTestValidationDHealth modelvalidation)
+        {
+            
+            try
+            {
+                var model = _mapper.Map<LayTestValidationDHealth, TestingHistoryCreateModel>(modelvalidation);
+                var result = await _testingHistoryService.Add(model);
+                if (result.Succeed)
+                {
+                    return Ok(new
+                    {
+                        Message = "Success",
+                        StatusCode = "201",
+                    });
                 }
                 return BadRequest(result.ResponseFailed);
             }

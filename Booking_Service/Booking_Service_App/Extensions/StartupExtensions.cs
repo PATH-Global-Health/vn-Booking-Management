@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using Data.DataAccess;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
@@ -60,6 +62,26 @@ namespace Booking_Service_App.Extensions
             services.AddScoped<IPrEPService, PrEPService>();
             services.AddScoped<IARTService, ARTService>();
             services.AddScoped<IWorkingSessionService, WorkingSessionService>();
+
+        }
+
+        public static void ConfigValidationProblem(this IServiceCollection services)
+        {
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+
+            services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    return new BadRequestObjectResult(new
+                    {
+                        StatusCode = 400,
+                        Message = context.ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage),
+                        Error = "Bad request"
+                    });
+
+                };
+            });
 
         }
     }
