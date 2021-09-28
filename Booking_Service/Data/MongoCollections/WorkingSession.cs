@@ -22,6 +22,7 @@ namespace Data.MongoCollections
 
     public class Session
     {
+        public string WorkingLocation { get; set; }
         public DateTime WorkingDate { get; set; }
         public DateTime TimeStart { get; set; }
         public DateTime TimeEnd { get; set; }
@@ -29,8 +30,10 @@ namespace Data.MongoCollections
 
     public class SessionContent
     {
+
         public bool IsConsulstation { get; set; }
         public SesstionType Type { get; set; }
+        public string Surrogate { get; set; }
         public string Note { get; set; }
         public string Code { get; set; }
         public string ResultTestingId { get; set; }
