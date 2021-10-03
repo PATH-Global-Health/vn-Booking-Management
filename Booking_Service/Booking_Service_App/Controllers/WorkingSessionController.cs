@@ -59,6 +59,25 @@ namespace Booking_Service_App.Controllers
             }
         }
 
+//        [HttpPost("TestRabbit")]
+//        [AllowAnonymous]
+//        public  IActionResult AddTick([FromBody] TicketEmployeeModel model)
+//        {
+//            try
+//            {
+//                var result =  _workingSessionService.TestRabit(model);
+//                if (result.Succeed)
+//                {
+//                    return Ok(result.Data);
+//                }
+//                return BadRequest(result.ErrorMessage);
+//            }
+//            catch (Exception e)
+//            {
+//                return BadRequest(e.Message);
+//            }
+//        }
+
 
     }
 }

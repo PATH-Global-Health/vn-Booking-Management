@@ -8,5 +8,6 @@ namespace Data.Constants
     {
         public const string BookingIntervalSyncQueue = "BookingU";
         public const string ExistExternalIDQueue = "IsExistExternalId";
+        public const string AddReferTicket = "AddReferTicket1";
     }
 }

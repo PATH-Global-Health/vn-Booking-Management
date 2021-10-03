@@ -4,11 +4,14 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using Data.Constants;
 using Data.DataAccess;
 using Data.Enums;
 using Data.MongoCollections;
 using Data.ViewModels;
 using MongoDB.Driver;
+using Newtonsoft.Json;
+using Services.RabbitMQ;
 
 namespace Services.Core
 {
@@ -16,16 +19,19 @@ namespace Services.Core
     {
         Task<ResultModel> CreateSession(WorkingSessionCreateModel model);
         Task<ResultModel> FilterByEmployee(string empId);
+        ResultModel TestRabit(TicketEmployeeModel model);
     }
     public class WorkingSessionService: IWorkingSessionService
     {
         private ApplicationDbContext _context;
         private IMapper _mapper;
+        private IProducerAddReferTicket _producer;
 
-        public WorkingSessionService(ApplicationDbContext context, IMapper mapper)
+        public WorkingSessionService(ApplicationDbContext context, IMapper mapper, IProducerAddReferTicket producer)
         {
             _context = context;
             _mapper = mapper;
+            _producer = producer;
         }
 
         public async Task<ResultModel> CreateSession(WorkingSessionCreateModel model)
@@ -85,6 +91,24 @@ namespace Services.Core
                     }
                 }
 
+
+                if (model.SessionContent.Type == SesstionType.ART ||
+                    model.SessionContent.Type == SesstionType.PrEP ||
+                    model.SessionContent.Type == SesstionType.RECENCY)
+                {
+                    ReferType refType = (ReferType)( (int)model.SessionContent.Type-2);
+                    var ticket = new TicketEmployeeModel
+                    {
+                        EmployeeId = model.CDO_Employee.EmployeeId,
+                        FromUnitId = new Guid(model.Facility.FacilityId),
+                        ToUnitId = new Guid(model.SessionContent.ToUnitId),
+                        ProfileId = model.Customer.Id,
+                        Type = refType
+                    };
+
+                    var resultAddReferTicket = JsonConvert.DeserializeObject<ResultModel>(SyncAddReferTicket(ticket));
+                    if(!resultAddReferTicket.Succeed) throw new Exception("refer failed");
+                }
                 await _context.WorkingSession.InsertOneAsync(data);
                 result.Data = data;
                 result.Succeed = true;
@@ -94,6 +118,32 @@ namespace Services.Core
                 result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
             }
             return result;
+        }
+
+        private string SyncAddReferTicket(TicketEmployeeModel externalId)
+        {
+            // to json
+            var message = JsonConvert.SerializeObject(externalId);
+            //sync instance with MSSQL and api
+            var response = _producer.Call(message, RabbitQueue.AddReferTicket); // call and wait for response
+            return response;
+        }
+
+        public ResultModel TestRabit(TicketEmployeeModel model)
+        {
+            var result = new ResultModel();
+            try
+            {
+                result.Data = SyncAddReferTicket(model);
+                result.Succeed = true;
+            }
+            catch (Exception e)
+            {
+                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+
+            return result;
+
         }
 
         public async Task<ResultModel> FilterByEmployee(string empId)

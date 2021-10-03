@@ -67,7 +67,7 @@ namespace Data.ViewModels
     {
         public Guid? ProfileId { get; set; }
         public Guid? ToUnitId { get; set; }
-        public Guid? FormUnitId { get; set; }
+        public Guid? FromUnitId { get; set; }
         public string EmployeeId { get; set; }
         public ReferType Type { get; set; }
 

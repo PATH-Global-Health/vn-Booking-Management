@@ -54,7 +54,7 @@ namespace Data.Enums
         ART = 4
     }
 
-    public enum ReferType
+    public enum ReferType:int
     {
         TESTING,
         PrEP,
