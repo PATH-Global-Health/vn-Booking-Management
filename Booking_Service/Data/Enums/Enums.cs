@@ -52,7 +52,13 @@ namespace Data.Enums
         RECENCY = 2,
         PrEP = 3,
         ART = 4
-       
+    }
+
+    public enum ReferType
+    {
+        TESTING,
+        PrEP,
+        ART
     }
 
 
