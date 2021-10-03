@@ -39,6 +39,10 @@ namespace Data.MongoCollections
         public string ResultTestingId { get; set; }
         public string Result { get; set; }
         public string FeedbackFromHospital { get; set; }
+        public string ToUnitId { get; set; }
+        public string FormId { get; set; }
+        public int ConsulstationType { get; set; }
+
     }
 
 

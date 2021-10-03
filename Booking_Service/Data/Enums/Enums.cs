@@ -47,10 +47,13 @@ namespace Data.Enums
 
     public enum SesstionType : int
     {
+        CONSULSTATION = 0,
         LAY_TEST = 1,
         RECENCY = 2,
         PrEP = 3,
         ART = 4
+       
     }
+
 
 }
