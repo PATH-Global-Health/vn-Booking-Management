@@ -41,6 +41,25 @@ namespace Booking_Service_App.Controllers
             }
         }
 
+        [HttpGet("SessionByCustomerId")]
+        public async Task<IActionResult> GetByCustomerId(Guid customerId)
+        {
+            try
+            {
+                var emp = User.Claims.Where(cl => cl.Type == "Id").FirstOrDefault().Value;
+                var result = await _workingSessionService.GetSessionByCustomerId(emp, customerId);
+                if (result.Succeed)
+                {
+                    return Ok(result.Data);
+                }
+                return BadRequest(result.ErrorMessage);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] WorkingSessionCreateModel model)
         {

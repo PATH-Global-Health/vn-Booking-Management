@@ -19,9 +19,11 @@ namespace Services.Core
     {
         Task<ResultModel> CreateSession(WorkingSessionCreateModel model);
         Task<ResultModel> FilterByEmployee(string empId);
+        Task<ResultModel> GetSessionByCustomerId(string empId, Guid customerId);
         ResultModel TestRabit(TicketEmployeeModel model);
     }
-    public class WorkingSessionService: IWorkingSessionService
+
+    public class WorkingSessionService : IWorkingSessionService
     {
         private ApplicationDbContext _context;
         private IMapper _mapper;
@@ -43,6 +45,7 @@ namespace Services.Core
                 {
                     throw new Exception("TimeEnd must greater than TimeStart");
                 }
+
                 var data = _mapper.Map<WorkingSessionCreateModel, WorkingSession>(model);
                 if (!model.SessionContent.IsConsulstation)
                 {
@@ -96,7 +99,7 @@ namespace Services.Core
                     model.SessionContent.Type == SesstionType.PrEP ||
                     model.SessionContent.Type == SesstionType.RECENCY)
                 {
-                    ReferType refType = (ReferType)( (int)model.SessionContent.Type-2);
+                    ReferType refType = (ReferType) ((int) model.SessionContent.Type - 2);
                     var ticket = new TicketEmployeeModel
                     {
                         EmployeeId = model.CDO_Employee.EmployeeId,
@@ -107,16 +110,20 @@ namespace Services.Core
                     };
 
                     var resultAddReferTicket = JsonConvert.DeserializeObject<ResultModel>(SyncAddReferTicket(ticket));
-                    if(!resultAddReferTicket.Succeed) throw new Exception("refer failed");
+                    if (!resultAddReferTicket.Succeed) throw new Exception("refer failed");
                 }
+
                 await _context.WorkingSession.InsertOneAsync(data);
                 result.Data = data;
                 result.Succeed = true;
             }
             catch (Exception e)
             {
-                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+                result.ErrorMessage = e.InnerException != null
+                    ? e.InnerException.Message + "\n" + e.StackTrace
+                    : e.Message + "\n" + e.StackTrace;
             }
+
             return result;
         }
 
@@ -139,7 +146,9 @@ namespace Services.Core
             }
             catch (Exception e)
             {
-                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+                result.ErrorMessage = e.InnerException != null
+                    ? e.InnerException.Message + "\n" + e.StackTrace
+                    : e.Message + "\n" + e.StackTrace;
             }
 
             return result;
@@ -152,7 +161,7 @@ namespace Services.Core
             try
             {
                 var baseFilter =
-                    Builders<WorkingSession>.Filter.Eq(x =>  x.CDO_Employee.EmployeeId,empId);
+                    Builders<WorkingSession>.Filter.Eq(x => x.CDO_Employee.EmployeeId, empId);
 
                 //Filter
 
@@ -160,17 +169,36 @@ namespace Services.Core
                 var list = await rs.ToListAsync();
                 result.Data = _mapper.Map<List<WorkingSession>, List<WorkingSessionViewModel>>(list);
                 result.Succeed = true;
+            }
+            catch (Exception e)
+            {
+                result.ErrorMessage = e.InnerException != null
+                    ? e.InnerException.Message + "\n" + e.StackTrace
+                    : e.Message + "\n" + e.StackTrace;
+            }
 
+            return result;
+        }
 
+        public async Task<ResultModel> GetSessionByCustomerId(string empId, Guid customerId)
+        {
+            var result = new ResultModel();
+            try
+            {
+                var session =
+                    await _context.WorkingSession.FindAsync(x => x.Customer.Id == customerId && x.IsDelete == false);
+                var data = session.FirstOrDefault();
+                result.Data = _mapper.Map<WorkingSession, WorkingSessionViewModel>(data);
                 result.Succeed = true;
             }
             catch (Exception e)
             {
-                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+                result.ErrorMessage = e.InnerException != null
+                    ? e.InnerException.Message + "\n" + e.StackTrace
+                    : e.Message + "\n" + e.StackTrace;
             }
+
             return result;
         }
-
-
     }
 }
