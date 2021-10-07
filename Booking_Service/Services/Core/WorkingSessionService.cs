@@ -18,7 +18,7 @@ namespace Services.Core
     public interface IWorkingSessionService
     {
         Task<ResultModel> CreateSession(WorkingSessionCreateModel model);
-        Task<ResultModel> FilterByEmployee(string empId);
+        Task<ResultModel> FilterByEmployee(string empId, Guid? customerId = null);
         Task<ResultModel> GetSessionByCustomerId(string empId, Guid customerId);
         ResultModel TestRabit(TicketEmployeeModel model);
     }
@@ -155,7 +155,7 @@ namespace Services.Core
 
         }
 
-        public async Task<ResultModel> FilterByEmployee(string empId)
+        public async Task<ResultModel> FilterByEmployee(string empId,Guid? customerId=null)
         {
             var result = new ResultModel();
             try
@@ -164,6 +164,12 @@ namespace Services.Core
                     Builders<WorkingSession>.Filter.Eq(x => x.CDO_Employee.EmployeeId, empId);
 
                 //Filter
+
+                if (customerId.HasValue)
+                {
+                    var customerFilter = Builders<WorkingSession>.Filter.Eq(x => x.Customer.Id, customerId);
+                    baseFilter = baseFilter & customerFilter;
+                }
 
                 var rs = await _context.WorkingSession.FindAsync(baseFilter);
                 var list = await rs.ToListAsync();

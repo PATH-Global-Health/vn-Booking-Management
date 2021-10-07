@@ -23,12 +23,12 @@ namespace Booking_Service_App.Controllers
         }
 
         [HttpGet("GetSessionEmployee")]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(Guid? customerId=null)
         {
             try
             {
                 var emp = User.Claims.Where(cl => cl.Type == "Id").FirstOrDefault().Value;
-                var result = await _workingSessionService.FilterByEmployee(emp);
+                var result = await _workingSessionService.FilterByEmployee(emp, customerId);
                 if (result.Succeed)
                 {
                     return Ok(result.Data);
