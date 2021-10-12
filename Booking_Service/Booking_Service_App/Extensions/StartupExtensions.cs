@@ -59,6 +59,7 @@ namespace Booking_Service_App.Extensions
             services.AddScoped<IProducerMQ, Producer>();
             services.AddScoped<IProducerCheckExternalId, ProducerCheckExternalId>();
             services.AddScoped<IProducerAddReferTicket, ProducerAddReferTicket>();
+            services.AddScoped<IProducerSetStatusProfile, ProducerSetStatusProfile>();
             services.AddScoped<ITestingHistoryService, TestingHistoryService>();
             services.AddScoped<IPrEPService, PrEPService>();
             services.AddScoped<IARTService, ARTService>();

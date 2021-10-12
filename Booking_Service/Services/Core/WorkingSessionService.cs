@@ -20,7 +20,7 @@ namespace Services.Core
         Task<ResultModel> CreateSession(WorkingSessionCreateModel model);
         Task<ResultModel> FilterByEmployee(string empId, Guid? customerId = null);
         Task<ResultModel> GetSessionByCustomerId(string empId, Guid customerId);
-        ResultModel TestRabit(TicketEmployeeModel model);
+        ResultModel TestRabit(string model);
     }
 
     public class WorkingSessionService : IWorkingSessionService
@@ -28,12 +28,14 @@ namespace Services.Core
         private ApplicationDbContext _context;
         private IMapper _mapper;
         private IProducerAddReferTicket _producer;
+        private IProducerSetStatusProfile _producerSetStatus;
 
-        public WorkingSessionService(ApplicationDbContext context, IMapper mapper, IProducerAddReferTicket producer)
+        public WorkingSessionService(ApplicationDbContext context, IMapper mapper, IProducerAddReferTicket producer, IProducerSetStatusProfile producerSetStatus)
         {
             _context = context;
             _mapper = mapper;
             _producer = producer;
+            _producerSetStatus= producerSetStatus;
         }
 
         public async Task<ResultModel> CreateSession(WorkingSessionCreateModel model)
@@ -93,7 +95,6 @@ namespace Services.Core
                     }
                 
 
-
                 if (model.SessionContent.Type == SesstionType.ART ||
                     model.SessionContent.Type == SesstionType.PrEP ||
                     model.SessionContent.Type == SesstionType.RECENCY)
@@ -111,6 +112,9 @@ namespace Services.Core
                     var resultAddReferTicket = JsonConvert.DeserializeObject<ResultModel>(SyncAddReferTicket(ticket));
                     if (!resultAddReferTicket.Succeed) throw new Exception("refer failed");
                 }
+
+                var resultSetStatusProfile = JsonConvert.DeserializeObject<ResultModel>(SyncSetStatusProfile(model.Customer.Id.ToString()));
+                if (!resultSetStatusProfile.Succeed) throw new Exception("Invalid customerId");
 
                 await _context.WorkingSession.InsertOneAsync(data);
                 result.Data = data;
@@ -135,12 +139,21 @@ namespace Services.Core
             return response;
         }
 
-        public ResultModel TestRabit(TicketEmployeeModel model)
+        private string SyncSetStatusProfile(string id)
+        {
+            // to json
+            var message = JsonConvert.SerializeObject(id);
+            //sync instance with MSSQL and api
+            var response = _producerSetStatus.Call(message, RabbitQueue.AddReferTicket); // call and wait for response
+            return response;
+        }
+
+        public ResultModel TestRabit(string id)
         {
             var result = new ResultModel();
             try
             {
-                result.Data = SyncAddReferTicket(model);
+                result.Data = SyncSetStatusProfile(id);
                 result.Succeed = true;
             }
             catch (Exception e)

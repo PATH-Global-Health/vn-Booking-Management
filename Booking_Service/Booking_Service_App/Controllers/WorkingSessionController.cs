@@ -80,7 +80,7 @@ namespace Booking_Service_App.Controllers
 
 //        [HttpPost("TestRabbit")]
 //        [AllowAnonymous]
-//        public  IActionResult AddTick([FromBody] TicketEmployeeModel model)
+//        public  IActionResult AddTick( string model)
 //        {
 //            try
 //            {
