@@ -47,8 +47,7 @@ namespace Services.Core
                 }
 
                 var data = _mapper.Map<WorkingSessionCreateModel, WorkingSession>(model);
-                if (!model.SessionContent.IsConsulstation)
-                {
+                
                     switch (model.SessionContent.Type)
                     {
                         case SesstionType.LAY_TEST:
@@ -92,7 +91,7 @@ namespace Services.Core
                             break;
                         }
                     }
-                }
+                
 
 
                 if (model.SessionContent.Type == SesstionType.ART ||
