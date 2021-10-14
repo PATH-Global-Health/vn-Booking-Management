@@ -96,7 +96,5 @@ namespace Booking_Service_App.Controllers
 //                return BadRequest(e.Message);
 //            }
 //        }
-
-
     }
 }
