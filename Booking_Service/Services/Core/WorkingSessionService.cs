@@ -64,6 +64,13 @@ namespace Services.Core
                             };
                             data.SessionContent.ResultTestingId = layTest.Id.ToString();
                             await _context.TestingHistory.InsertOneAsync(layTest);
+
+                            if (!string.IsNullOrEmpty(model.SessionContent.Result))
+                            {
+                                var resultSetStatusProfile = JsonConvert.DeserializeObject<ResultModel>(SyncSetStatusProfile(model.Customer.Id.ToString()));
+                                if (!resultSetStatusProfile.Succeed) throw new Exception("Invalid customerId");
+                            }
+
                             break;
                         }
                         case SesstionType.RECENCY:
