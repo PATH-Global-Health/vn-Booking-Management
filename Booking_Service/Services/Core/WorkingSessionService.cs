@@ -112,10 +112,6 @@ namespace Services.Core
                     var resultAddReferTicket = JsonConvert.DeserializeObject<ResultModel>(SyncAddReferTicket(ticket));
                     if (!resultAddReferTicket.Succeed) throw new Exception("refer failed");
                 }
-
-                var resultSetStatusProfile = JsonConvert.DeserializeObject<ResultModel>(SyncSetStatusProfile(model.Customer.Id.ToString()));
-                if (!resultSetStatusProfile.Succeed) throw new Exception("Invalid customerId");
-
                 await _context.WorkingSession.InsertOneAsync(data);
                 result.Data = data;
                 result.Succeed = true;
