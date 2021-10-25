@@ -73,32 +73,32 @@ namespace Services.Core
 
                             break;
                         }
-                        case SesstionType.RECENCY:
-                        {
-                            var recency = _mapper.Map<WorkingSessionCreateModel, TestingHistory>(model);
-                            recency.Result = new Result
-                            {
-                                Type = TestingType.RECENCY,
-                                ResultTesting = model.SessionContent.Result,
-                            };
-                            data.SessionContent.ResultTestingId = recency.Id.ToString();
-                            await _context.TestingHistory.InsertOneAsync(recency);
-                            break;
-                        }
-                        case SesstionType.PrEP:
-                        {
-                            var prEP = _mapper.Map<WorkingSessionCreateModel, PrEP>(model);
-                            data.SessionContent.ResultTestingId = prEP.Id.ToString();
-                            await _context.PrEP.InsertOneAsync(prEP);
-                            break;
-                        }
-                        case SesstionType.ART:
-                        {
-                            var art = _mapper.Map<WorkingSessionCreateModel, ART>(model);
-                            data.SessionContent.ResultTestingId = art.Id.ToString();
-                            await _context.ART.InsertOneAsync(art);
-                            break;
-                        }
+//                        case SesstionType.RECENCY:
+//                        {
+//                            var recency = _mapper.Map<WorkingSessionCreateModel, TestingHistory>(model);
+//                            recency.Result = new Result
+//                            {
+//                                Type = TestingType.RECENCY,
+//                                ResultTesting = model.SessionContent.Result,
+//                            };
+//                            data.SessionContent.ResultTestingId = recency.Id.ToString();
+//                            await _context.TestingHistory.InsertOneAsync(recency);
+//                            break;
+//                        }
+//                        case SesstionType.PrEP:
+//                        {
+//                            var prEP = _mapper.Map<WorkingSessionCreateModel, PrEP>(model);
+//                            data.SessionContent.ResultTestingId = prEP.Id.ToString();
+//                            await _context.PrEP.InsertOneAsync(prEP);
+//                            break;
+//                        }
+//                        case SesstionType.ART:
+//                        {
+//                            var art = _mapper.Map<WorkingSessionCreateModel, ART>(model);
+//                            data.SessionContent.ResultTestingId = art.Id.ToString();
+//                            await _context.ART.InsertOneAsync(art);
+//                            break;
+//                        }
                     }
                 
 
