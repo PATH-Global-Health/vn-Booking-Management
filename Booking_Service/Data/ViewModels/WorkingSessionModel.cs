@@ -72,6 +72,11 @@ namespace Data.ViewModels
         public ReferType Type { get; set; }
 
     }
+    public class StatusProfileModel
+    {
+        public Guid CustomerId { get; set; }
+        public int Status { get; set; }
+    }
 
 
 

@@ -20,7 +20,7 @@ namespace Services.Core
         Task<ResultModel> CreateSession(WorkingSessionCreateModel model);
         Task<ResultModel> FilterByEmployee(string empId, Guid? customerId = null);
         Task<ResultModel> GetSessionByCustomerId(string empId, Guid customerId);
-        ResultModel TestRabit(string model);
+        ResultModel TestRabit(StatusProfileModel model);
     }
 
     public class WorkingSessionService : IWorkingSessionService
@@ -67,7 +67,8 @@ namespace Services.Core
 
                             if (!string.IsNullOrEmpty(model.SessionContent.Result))
                             {
-                                var resultSetStatusProfile = JsonConvert.DeserializeObject<ResultModel>(SyncSetStatusProfile(model.Customer.Id.ToString()));
+                                var customerProcessed = new StatusProfileModel{CustomerId = model.Customer.Id,Status = 2};
+                                var resultSetStatusProfile = JsonConvert.DeserializeObject<ResultModel>(SyncSetStatusProfile(customerProcessed));
                                 if (!resultSetStatusProfile.Succeed) throw new Exception("Invalid customerId");
                             }
 
@@ -142,7 +143,7 @@ namespace Services.Core
             return response;
         }
 
-        private string SyncSetStatusProfile(string id)
+        private string SyncSetStatusProfile(StatusProfileModel id)
         {
             // to json
             var message = JsonConvert.SerializeObject(id);
@@ -151,12 +152,21 @@ namespace Services.Core
             return response;
         }
 
-        public ResultModel TestRabit(string id)
+//        private string SyncSetStatusProfileTest(StatusProfileModel id)
+//        {
+//            // to json
+//            var message = JsonConvert.SerializeObject(id);
+//            //sync instance with MSSQL and api
+//            var response = _producerSetStatus.Call(message, RabbitQueue.AddReferTicket); // call and wait for response
+//            return response;
+//        }
+
+        public ResultModel TestRabit(StatusProfileModel model)
         {
             var result = new ResultModel();
             try
             {
-                result.Data = SyncSetStatusProfile(id);
+                result.Data = SyncSetStatusProfile(model);
                 result.Succeed = true;
             }
             catch (Exception e)
