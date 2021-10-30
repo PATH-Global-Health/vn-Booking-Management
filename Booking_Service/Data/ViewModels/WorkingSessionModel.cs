@@ -75,6 +75,7 @@ namespace Data.ViewModels
     public class StatusProfileModel
     {
         public Guid CustomerId { get; set; }
+        public string UserName { get; set; }
         public int Status { get; set; }
     }
 

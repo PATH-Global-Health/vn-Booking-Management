@@ -74,35 +74,37 @@ namespace Services.Core
 
                             break;
                         }
-//                        case SesstionType.RECENCY:
-//                        {
-//                            var recency = _mapper.Map<WorkingSessionCreateModel, TestingHistory>(model);
-//                            recency.Result = new Result
-//                            {
-//                                Type = TestingType.RECENCY,
-//                                ResultTesting = model.SessionContent.Result,
-//                            };
-//                            data.SessionContent.ResultTestingId = recency.Id.ToString();
-//                            await _context.TestingHistory.InsertOneAsync(recency);
-//                            break;
-//                        }
-//                        case SesstionType.PrEP:
-//                        {
-//                            var prEP = _mapper.Map<WorkingSessionCreateModel, PrEP>(model);
-//                            data.SessionContent.ResultTestingId = prEP.Id.ToString();
-//                            await _context.PrEP.InsertOneAsync(prEP);
-//                            break;
-//                        }
-//                        case SesstionType.ART:
-//                        {
-//                            var art = _mapper.Map<WorkingSessionCreateModel, ART>(model);
-//                            data.SessionContent.ResultTestingId = art.Id.ToString();
-//                            await _context.ART.InsertOneAsync(art);
-//                            break;
-//                        }
+                        case SesstionType.RECENCY:
+                        {
+                            var recency = _mapper.Map<WorkingSessionCreateModel, TestingHistory>(model);
+                            recency.Result = new Result
+                            {
+                                Type = TestingType.HTS_POS,
+                                ResultTesting = model.SessionContent.Result,
+                            };
+                            data.Facility.FacilityId = model.SessionContent.ToUnitId;
+                            data.SessionContent.ResultTestingId = recency.Id.ToString();
+                            await _context.TestingHistory.InsertOneAsync(recency);
+                            break;
+                        }
+                        case SesstionType.PrEP:
+                        {
+                            var prEP = _mapper.Map<WorkingSessionCreateModel, PrEP>(model);
+                            data.Facility.FacilityId = model.SessionContent.ToUnitId;
+                            data.SessionContent.ResultTestingId = prEP.Id.ToString();
+                            await _context.PrEP.InsertOneAsync(prEP);
+                            break;
+                        }
+                        case SesstionType.ART:
+                        {
+                            var art = _mapper.Map<WorkingSessionCreateModel, ART>(model);
+                            data.Facility.FacilityId = model.SessionContent.ToUnitId;
+                            data.SessionContent.ResultTestingId = art.Id.ToString();
+                            await _context.ART.InsertOneAsync(art);
+                            break;
+                        }
                     }
-                
-
+                    
                 if (model.SessionContent.Type == SesstionType.ART ||
                     model.SessionContent.Type == SesstionType.PrEP ||
                     model.SessionContent.Type == SesstionType.RECENCY)
@@ -120,6 +122,8 @@ namespace Services.Core
                     var resultAddReferTicket = JsonConvert.DeserializeObject<ResultModel>(SyncAddReferTicket(ticket));
                     if (!resultAddReferTicket.Succeed) throw new Exception("refer failed");
                 }
+
+               
                 await _context.WorkingSession.InsertOneAsync(data);
                 result.Data = data;
                 result.Succeed = true;

@@ -391,12 +391,21 @@ namespace Services.Core
                     update = update.Set(en => en.Result.Code, model.Code);
                     update = update.Set(en => en.Result.TakenDate, model.TakenDate);
                 }
-
-
                 update = update.Set(en => en.DateUpdate, DateTime.UtcNow.AddHours(7));
 
                 await _context.TestingHistory.UpdateOneAsync(filter, update);
                 var modelUpdated = _context.TestingHistory.Find(filter).FirstOrDefault();
+
+
+                #region Update WorkingSession
+                var sessionFilter = Builders<WorkingSession>.Filter.Eq(en => en.SessionContent.ResultTestingId, model.Id.ToString());
+                if (sessionFilter != null)
+                {
+                    var updateSession = Builders<WorkingSession>.Update.Set(mt => mt.SessionContent.Result, model.ResultTesting);
+                    await _context.WorkingSession.UpdateOneAsync(sessionFilter, updateSession);
+                }
+                #endregion
+
                 var data = _mapper.Map<TestingHistory, LayTestViewModel>(modelUpdated);
                 result.Data = data;
                 result.Succeed = true;
