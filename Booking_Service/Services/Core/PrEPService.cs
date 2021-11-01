@@ -21,6 +21,7 @@ namespace Services.Core
     {
         Task<ResultModel> Add(PrEPCreateModel model);
         Task<ResultModel> GetByCustomerId(Guid customerId);
+        Task<ResultModel> UpdatePrEP(Guid id, PrEPUpdateModel model);
 
     }
 
@@ -133,6 +134,57 @@ namespace Services.Core
         }
 
         #endregion
+
+
+        public async Task<ResultModel> UpdatePrEP(Guid id,PrEPUpdateModel model)
+        {
+            var result = new ResultModel();
+
+            try
+            {
+                var filter = Builders<PrEP>.Filter.Eq(en => en.Id, id);
+
+                if (filter == null)
+                {
+                    throw new Exception("Can not find Id");
+                }
+                var update = Builders<PrEP>.Update.Set(mt => mt.IsDelete, model.IsDelete);
+
+                if (!string.IsNullOrEmpty(model.Code))
+                {
+                    update = update.Set(en => en.PrEP_Infomation.Code, model.Code);
+                }
+
+                if (model.StartDate != null)
+                {
+                    update = update.Set(en => en.PrEP_Infomation.StartDate, model.StartDate);
+                }
+
+                await _context.PrEP.UpdateOneAsync(filter, update);
+                var modelUpdated = _context.PrEP.Find(filter).FirstOrDefault();
+
+
+                #region Update WorkingSession
+                var sessionFilter = Builders<WorkingSession>.Filter.Eq(en => en.SessionContent.ResultTestingId, id.ToString());
+                if (sessionFilter != null)
+                {
+                    var updateSession = Builders<WorkingSession>.Update.Set(mt => mt.SessionContent.Result, "Processed");
+                    await _context.WorkingSession.UpdateOneAsync(sessionFilter, updateSession);
+                }
+                #endregion
+                var data = _mapper.Map<PrEP, PrEPViewModel>(modelUpdated);
+                result.Data = data;
+                result.Succeed = true;
+
+
+            }
+            catch (Exception e)
+            {
+                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+            }
+
+            return result;
+        }
 
 
         // Comunication

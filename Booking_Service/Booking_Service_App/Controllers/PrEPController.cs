@@ -57,5 +57,23 @@ namespace Booking_Service_App.Controllers
                 return BadRequest(e.Message);
             }
         }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdatePrEP(Guid id,[FromBody] PrEPUpdateModel model)
+        {
+            try
+            {
+                var result = await _prEPService.UpdatePrEP(id, model);
+                if (result.Succeed)
+                {
+                    return Ok(result.Data);
+                }
+                return BadRequest(result.ResponseFailed);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
     }
 }

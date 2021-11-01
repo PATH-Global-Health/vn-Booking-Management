@@ -50,4 +50,11 @@ namespace Data.ViewModels
         [Range(0,1)]
         public int IsLate { get; set; }
     }
+
+    public class PrEPUpdateModel
+    {
+        public bool IsDelete { get; set; }
+        public string Code { get; set; }
+        public DateTime StartDate { get; set; }
+    }
 }
