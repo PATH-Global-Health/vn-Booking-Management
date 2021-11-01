@@ -419,7 +419,6 @@ namespace Services.Core
         }
         #endregion
 
-
         // Comunication
 
         #region ComunicationDhealth
