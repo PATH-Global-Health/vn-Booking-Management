@@ -108,12 +108,12 @@ namespace Booking_Service_App.Controllers
 
         [HttpGet("LayTest")]
         public async Task<IActionResult> Get(
-            string employeeId, string employeeName, string customer, Guid? customerId = null, int? pageIndex=0,int? pageSize =0)
+            string employeeId, string employeeName, string customer, string username, Guid? customerId = null, int? pageIndex=0,int? pageSize =0)
         {
             try
             {
                 var result = await _testingHistoryService
-                    .GetLayTest(employeeId, employeeName, customer, customerId.HasValue?customerId.Value: customerId,pageIndex,pageSize);
+                    .GetLayTest(employeeId, employeeName, customer,username, customerId.HasValue?customerId.Value: customerId,pageIndex,pageSize);
                 if (result.Succeed)
                 {
                     return Ok(result.Data);

@@ -21,7 +21,7 @@ namespace Services.Core
         Task<ResultModel> Add(TestingHistoryCreateModel model);
         Task<ResultModel> GetById(Guid id);
         Task<ResultModel> CreateLayTest(LayTestCreateModel model);
-        Task<ResultModel> GetLayTest(string employeeId,string employeeName,string customer, Guid? customerId = null, int? pageIndex = 0, int? pageSize =0);
+        Task<ResultModel> GetLayTest(string employeeId,string employeeName,string customer,string userName, Guid? customerId = null, int? pageIndex = 0, int? pageSize =0);
         Task<ResultModel> GetLayTestCustomer(string emoployId ,string customer, Guid? customerId = null);
         Task<ResultModel> GetLayTestByCustomerId(string customerId,int? pageIndex=0,int? pageSize=0);
         Task<ResultModel> GetLayTestById(Guid laytestId);
@@ -215,7 +215,7 @@ namespace Services.Core
 
         #region GetLayTest
         public async Task<ResultModel> GetLayTest(
-            string employeeId, string employeeName, string customerName, Guid? customerId = null,int? pageIndex =0,int?pageSize = 0)
+            string employeeId, string employeeName, string customerName,string username, Guid? customerId = null,int? pageIndex =0,int?pageSize = 0)
         {
             var result = new ResultModel();
             try
@@ -250,6 +250,14 @@ namespace Services.Core
                 {
                     var customerIdFilter =
                         Builders<TestingHistory>.Filter.Eq(x => x.Customer.Id, customerId);
+
+                    basefilter = basefilter & customerIdFilter;
+                }
+
+                if (!string.IsNullOrEmpty(username))
+                {
+                    var customerIdFilter =
+                        Builders<TestingHistory>.Filter.Eq(x => x.Customer.Username, username);
 
                     basefilter = basefilter & customerIdFilter;
                 }
