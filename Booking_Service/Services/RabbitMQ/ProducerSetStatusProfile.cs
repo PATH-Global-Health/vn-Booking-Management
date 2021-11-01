@@ -67,7 +67,7 @@ namespace Services.RabbitMQ
 
                 channel.BasicPublish(
                     exchange: "",
-                    routingKey: "SetStatusProfile2",
+                    routingKey: "SetStatusProfile4",
                     basicProperties: props,
                     body: messageBytes);
 

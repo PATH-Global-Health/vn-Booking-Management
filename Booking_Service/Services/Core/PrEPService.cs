@@ -169,6 +169,7 @@ namespace Services.Core
                 if (sessionFilter != null)
                 {
                     var updateSession = Builders<WorkingSession>.Update.Set(mt => mt.SessionContent.Result, "Processed");
+                    updateSession = updateSession.Set(mt => mt.SessionContent.Code, model.Code);
                     await _context.WorkingSession.UpdateOneAsync(sessionFilter, updateSession);
                 }
                 #endregion
