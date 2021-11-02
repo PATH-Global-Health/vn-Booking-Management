@@ -41,5 +41,10 @@ namespace Data.ViewModels
         public string Code { get; set; }
     }
 
-
+    public class ARTUpdateModel
+    {
+        public bool IsDelete { get; set; }
+        public string Code { get; set; }
+        public DateTime StartDate { get; set; }
+    }
 }

@@ -143,8 +143,8 @@ namespace Services.Core
             try
             {
                 var filter = Builders<PrEP>.Filter.Eq(en => en.Id, id);
-
-                if (filter == null)
+                var modelUpdated = _context.PrEP.Find(filter).FirstOrDefault();
+                if (modelUpdated == null)
                 {
                     throw new Exception("Can not find Id");
                 }
@@ -161,8 +161,7 @@ namespace Services.Core
                 }
 
                 await _context.PrEP.UpdateOneAsync(filter, update);
-                var modelUpdated = _context.PrEP.Find(filter).FirstOrDefault();
-
+                var data = _context.PrEP.Find(filter).FirstOrDefault();
 
                 #region Update WorkingSession
                 var sessionFilter = Builders<WorkingSession>.Filter.Eq(en => en.SessionContent.ResultTestingId, id.ToString());
@@ -173,15 +172,14 @@ namespace Services.Core
                     await _context.WorkingSession.UpdateOneAsync(sessionFilter, updateSession);
                 }
                 #endregion
-                var data = _mapper.Map<PrEP, PrEPViewModel>(modelUpdated);
-                result.Data = data;
+                result.Data = _mapper.Map<PrEP, PrEPViewModel>(data);
                 result.Succeed = true;
 
 
             }
             catch (Exception e)
             {
-                result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+                result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
             }
 
             return result;

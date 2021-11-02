@@ -56,5 +56,23 @@ namespace Booking_Service_App.Controllers
                 return BadRequest(e.Message);
             }
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateART(Guid id, [FromBody] ARTUpdateModel model)
+        {
+            try
+            {
+                var result = await _artService.UpdateART(id, model);
+                if (result.Succeed)
+                {
+                    return Ok(result.Data);
+                }
+                return BadRequest(result.ResponseFailed);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
     }
 }

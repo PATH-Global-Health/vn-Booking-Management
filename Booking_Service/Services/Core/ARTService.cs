@@ -19,6 +19,7 @@ namespace Services.Core
     {
         Task<ResultModel> Add(ARTCreateModel model);
         Task<ResultModel> GetByCustomerId(Guid customerId);
+        Task<ResultModel> UpdateART(Guid id, ARTUpdateModel model);
     }
     public class ARTService : IARTService
     {
@@ -133,6 +134,54 @@ namespace Services.Core
 
         #endregion
 
+
+        #region Update PrEP
+
+        public async Task<ResultModel> UpdateART(Guid id, ARTUpdateModel model)
+        {
+            var result = new ResultModel();
+            try
+            {
+                var filter = Builders<ART>.Filter.Eq(en => en.Id, id);
+                var modelUpdated = _context.ART.Find(filter).FirstOrDefault();
+                if (modelUpdated == null)
+                {
+                    throw new Exception("Can not find Id");
+                }
+                var update = Builders<ART>.Update.Set(mt => mt.IsDelete, model.IsDelete);
+                if (!string.IsNullOrEmpty(model.Code))
+                {
+                    update = update.Set(en => en.ART_Infomation.Code, model.Code);
+                }
+                if (model.StartDate != null)
+                {
+                    update = update.Set(en => en.ART_Infomation.StartDate, model.StartDate);
+                }
+                await _context.ART.UpdateOneAsync(filter, update);
+                var data = _context.ART.Find(filter).FirstOrDefault();
+
+                #region Update WorkingSession
+                var sessionFilter = Builders<WorkingSession>.Filter.Eq(en => en.SessionContent.ResultTestingId, id.ToString());
+                if (sessionFilter != null)
+                {
+                    var updateSession = Builders<WorkingSession>.Update.Set(mt => mt.SessionContent.Result, "Processed");
+                    updateSession = updateSession.Set(mt => mt.SessionContent.Code, model.Code);
+                    await _context.WorkingSession.UpdateOneAsync(sessionFilter, updateSession);
+                }
+                #endregion
+
+                result.Data = _mapper.Map<ART, ARTViewModel>(data);
+                result.Succeed = true;
+            }
+            catch (Exception e)
+            {
+                result.ResponseFailed = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
+
+            }
+            return result;
+        }
+
+        #endregion
 
         #region ComunicationDhealth
 
