@@ -20,7 +20,7 @@ namespace Services.Core
     public interface IPrEPService
     {
         Task<ResultModel> Add(PrEPCreateModel model);
-        Task<ResultModel> GetByCustomerId(Guid customerId);
+        Task<ResultModel> GetByCustomerId(Guid customerId, string unitId);
         Task<ResultModel> UpdatePrEP(Guid id, PrEPUpdateModel model);
 
     }
@@ -113,13 +113,17 @@ namespace Services.Core
 
         #region GetByCustomerId
 
-        public async Task<ResultModel> GetByCustomerId(Guid customerId)
+        public async Task<ResultModel> GetByCustomerId(Guid customerId,string unitId)
         {
             var result = new ResultModel();
             try
             {
                 var baseFilter = Builders<PrEP>.Filter.Eq(x => x.Customer.Id, customerId);
 
+                if (!string.IsNullOrEmpty(unitId))
+                {
+                    baseFilter = baseFilter & Builders<PrEP>.Filter.Eq(x => x.Facility.FacilityId, unitId);
+                }
                 var rs = await _context.PrEP.FindAsync(baseFilter);
                 var list = await rs.ToListAsync();
                 result.Data = _mapper.Map<List<PrEP>, List<PrEPViewModel>>(list);

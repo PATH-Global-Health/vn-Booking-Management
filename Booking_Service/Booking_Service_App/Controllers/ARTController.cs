@@ -22,11 +22,11 @@ namespace Booking_Service_App.Controllers
         }
 
         [HttpGet("GetByCustomerId/{customerId}")]
-        public async Task<IActionResult> Get(Guid customerId)
+        public async Task<IActionResult> Get(Guid customerId, string unitId)
         {
             try
             {
-                var result = await _artService.GetByCustomerId(customerId);
+                var result = await _artService.GetByCustomerId(customerId,unitId);
                 if (result.Succeed)
                 {
                     return Ok(result.Data);

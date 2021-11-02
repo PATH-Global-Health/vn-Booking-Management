@@ -100,6 +100,9 @@ namespace Services.MappingProfile
             CreateMap<WorkingSessionCreateModel, ART>();
             CreateMap<ResultTestingValidationModel, ResultTestingModel>();
 
+            CreateMap<WorkingSessionCreateModel, PrEPCreateModel>();
+            CreateMap<WorkingSessionCreateModel, ARTCreateModel>();
+
 
 
 

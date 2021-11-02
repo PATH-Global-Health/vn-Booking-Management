@@ -89,7 +89,10 @@ namespace Services.Core
                         }
                         case SesstionType.PrEP:
                         {
+                            //
                             var prEP = _mapper.Map<WorkingSessionCreateModel, PrEP>(model);
+                            //
+                            prEP.PrEP_Infomation = new PrEP_Infomation();
                             data.Facility.FacilityId = model.SessionContent.ToUnitId;
                             data.SessionContent.ResultTestingId = prEP.Id.ToString();
                             await _context.PrEP.InsertOneAsync(prEP);
@@ -98,6 +101,7 @@ namespace Services.Core
                         case SesstionType.ART:
                         {
                             var art = _mapper.Map<WorkingSessionCreateModel, ART>(model);
+                            art.ART_Infomation = new ART_Infomation();
                             data.Facility.FacilityId = model.SessionContent.ToUnitId;
                             data.SessionContent.ResultTestingId = art.Id.ToString();
                             await _context.ART.InsertOneAsync(art);

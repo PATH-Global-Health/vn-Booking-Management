@@ -18,7 +18,7 @@ namespace Services.Core
     public interface IARTService
     {
         Task<ResultModel> Add(ARTCreateModel model);
-        Task<ResultModel> GetByCustomerId(Guid customerId);
+        Task<ResultModel> GetByCustomerId(Guid customerId, string unitId);
         Task<ResultModel> UpdateART(Guid id, ARTUpdateModel model);
     }
     public class ARTService : IARTService
@@ -113,13 +113,16 @@ namespace Services.Core
 
         #region GetByCustomerId
 
-        public async Task<ResultModel> GetByCustomerId(Guid customerId)
+        public async Task<ResultModel> GetByCustomerId(Guid customerId,string unitId)
         {
             var result = new ResultModel();
             try
             {
                 var baseFilter = Builders<ART>.Filter.Eq(x => x.Customer.Id, customerId);
-
+                if (!string.IsNullOrEmpty(unitId))
+                {
+                    baseFilter = baseFilter & Builders<ART>.Filter.Eq(x => x.Facility.FacilityId, unitId);
+                }
                 var rs = await _context.ART.FindAsync(baseFilter);
                 var list = await rs.ToListAsync();
                 result.Data = _mapper.Map<List<ART>, List<ARTViewModel>>(list);
