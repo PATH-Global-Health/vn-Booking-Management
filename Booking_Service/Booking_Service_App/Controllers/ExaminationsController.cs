@@ -292,17 +292,17 @@ namespace Booking_Service_App.Controllers
             return BadRequest(result.ErrorMessage);
         }
 
-        [HttpGet("TestRabit")]
-        [AllowAnonymous]
-        public IActionResult TestRabbit([FromBody] ExamModel model)
-        {
-            var result =  _examService.TestRabit(model);
-            if (result.Succeed)
-            {
-                return Ok(result.Data);
-            }
-            return BadRequest(result.ErrorMessage);
-        }
+//        [HttpPost("TestRabit")]
+//        [AllowAnonymous]
+//        public IActionResult TestRabbit([FromBody] IntervalSyncModel model)
+//        {
+//            var result =  _examService.TestRabit(model);
+//            if (result.Succeed)
+//            {
+//                return Ok(result.Data);
+//            }
+//            return BadRequest(result.ErrorMessage);
+//        }
 
 
     }

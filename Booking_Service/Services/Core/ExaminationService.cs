@@ -36,7 +36,7 @@ namespace Services.Core
         Task<ResultModel> UpdateResultForm(FormFileUpdateModel model);
         Task<ResultModel> Statistic(Guid? unitId=null, DateTime? from = null, DateTime? to = null, Guid? doctorId = null);
 
-        ResultModel TestRabit(Object Model);
+        ResultModel TestRabit(IntervalSyncModel Model);
 
 
     }
@@ -46,26 +46,24 @@ namespace Services.Core
         private ApplicationDbContext _context;
         private IMapper _mapper;
         private IProducerMQ _producer;
+        private IProducerSetInterval _producerInterval;
 
-        public ExaminationService(ApplicationDbContext context, IMapper mapper, IProducerMQ producer)
+        public ExaminationService(ApplicationDbContext context, IMapper mapper, IProducerMQ producer, IProducerSetInterval producerInterval)
         {
             _context = context;
             _mapper = mapper;
             _producer = producer;
+            _producerInterval = producerInterval;
         }
 
-        public ResultModel TestRabit(Object model)
+        public ResultModel TestRabit(IntervalSyncModel model)
         {
             var result = new ResultModel();
-            ResultModel syncResult = new ResultModel();
-
             try
             {
-
-
-                result.Data = model;
-                result.Succeed = true;
-
+                var message = JsonConvert.SerializeObject(model);
+                var response = _producerInterval.Call(message, RabbitQueue.BookingIntervalSyncQueue); 
+                result = JsonConvert.DeserializeObject<ResultModel>(response);
             }
             catch (Exception e)
             {
@@ -459,7 +457,7 @@ namespace Services.Core
             var message = JsonConvert.SerializeObject(syncModel);
 
             //sync instance with MSSQL and api
-            var response = _producer.Call(message, RabbitQueue.BookingIntervalSyncQueue); // call and wait for response
+            var response = _producerInterval.Call(message, RabbitQueue.BookingIntervalSyncQueue); // call and wait for response
 
             return response;
         }
