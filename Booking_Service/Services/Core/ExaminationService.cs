@@ -89,8 +89,7 @@ namespace Services.Core
                         throw new Exception("Username is null or empty.");
                     }
                     var filter = Builders<Examination>.Filter.Where(m => m.Interval.Id == model.Interval.Id
-                                                                            && m.Customer.Id == model.Customer.Id
-                                                                            && m.Status == BookingStatus.UNFINISHED);
+                                                                         && (m.Status == BookingStatus.UNFINISHED || m.Status == BookingStatus.FINISHED));
                     var existed = _context.Examinations.Find(filter).FirstOrDefault();
                     if (existed != null)
                     {
