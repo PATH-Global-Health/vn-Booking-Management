@@ -4,7 +4,6 @@ using Data.DataAccess;
 using Data.Enums;
 using Data.MongoCollections;
 using Data.ViewModels;
-using MongoDB.Bson;
 using MongoDB.Driver;
 using Newtonsoft.Json;
 using Services.RabbitMQ;
@@ -12,8 +11,6 @@ using Services.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Services.Core
@@ -76,9 +73,7 @@ namespace Services.Core
         public async Task<ResultModel> Add(ExaminationCreateModel model, string username)
         {
             var result = new ResultModel();
-            bool isBookingExam = model.Unit.Username.Contains("hcdc.");
             ResultModel syncResult = new ResultModel();
-
             //using (var session = _context.StartSession())
             {
                 //session.StartTransaction();
@@ -88,52 +83,11 @@ namespace Services.Core
                     {
                         throw new Exception("Username is null or empty.");
                     }
-                    var filter = Builders<Examination>.Filter.Where(m => m.Interval.Id == model.Interval.Id
-                                                                         && (m.Status == BookingStatus.UNFINISHED || m.Status == BookingStatus.FINISHED));
-                    var existed = _context.Examinations.Find(filter).FirstOrDefault();
-                    if (existed != null)
-                    {
-                        throw new Exception("Khách hàng đã đặt giờ này.");
-                    }
-                    #region Concurrency check
-                    ReplaceOneResult replaceResult;
-                    var loadedInstance = _context.Interval.AsQueryable()
-                                                            .Where(doc => doc.Id == model.Interval.Id)
-                                                            .SingleOrDefault();
-                    if (loadedInstance == null)
-                    {
-                        loadedInstance = new Interval()
-                        {
-                            NumId = model.Interval.NumId,
-                            From = model.Interval.From,
-                            To = model.Interval.To,
-                            Id = model.Interval.Id,
-                            Version = 0
-                        };
-                        await _context.Interval.InsertOneAsync( loadedInstance);
-                    }
-                    var version = loadedInstance.Version;
 
-                    loadedInstance.Version++;
-                    replaceResult = await _context.Interval.ReplaceOneAsync( c => c.Id == model.Interval.Id
-                                                                    && c.Version == version, loadedInstance,
-                                                                    new ReplaceOptions { IsUpsert = false });
-                    if (replaceResult.ModifiedCount != 1)
-                    {
-                        throw new Exception("Giờ đã được đặt.");
-                    }
-                    #endregion
-
-                    Examination newModel = _mapper.Map<ExaminationCreateModel, Examination>(model);
-                    newModel.BookedByUser = username;
-                    newModel.Status = BookingStatus.UNFINISHED;
-                    await _context.Examinations.InsertOneAsync( newModel);
-                    
                     // đồng bộ với Schedule
                     var syncModel = new IntervalSyncModel()
                     {
                         Id = model.Interval.Id,
-                        IsAvailable = false,
                     };
                     var syncResponse = SyncInterval(syncModel);
                     syncResult = JsonConvert.DeserializeObject<ResultModel>(syncResponse);
@@ -141,6 +95,54 @@ namespace Services.Core
                     {
                         throw new Exception(syncResult.ErrorMessage);
                     }
+
+
+                    //---------------------------
+
+                    //                    var filter = Builders<Examination>.Filter.Where(m => m.Interval.Id == model.Interval.Id
+                    //                                                                         && (m.Status == BookingStatus.UNFINISHED || m.Status == BookingStatus.FINISHED));
+                    //                    var existed = _context.Examinations.Find(filter).FirstOrDefault();
+                    //                    if (existed != null)
+                    //                    {
+                    //                        throw new Exception("Khách hàng đã đặt giờ này.");
+                    //                    }
+
+                    //----------------------------
+                    #region Concurrency check
+                    //                    ReplaceOneResult replaceResult;
+                    //                    var loadedInstance = _context.Interval.AsQueryable()
+                    //                                                            .Where(doc => doc.Id == model.Interval.Id)
+                    //                                                            .SingleOrDefault();
+                    //                    if (loadedInstance == null)
+                    //                    {
+                    //                        loadedInstance = new Interval()
+                    //                        {
+                    //                            NumId = model.Interval.NumId,
+                    //                            From = model.Interval.From,
+                    //                            To = model.Interval.To,
+                    //                            Id = model.Interval.Id,
+                    //                            Version = 0
+                    //                        };
+                    //                        await _context.Interval.InsertOneAsync( loadedInstance);
+                    //                    }
+                    //                    var version = loadedInstance.Version;
+                    //
+                    //                    loadedInstance.Version++;
+                    //                    replaceResult = await _context.Interval.ReplaceOneAsync( c => c.Id == model.Interval.Id
+                    //                                                                    && c.Version == version, loadedInstance,
+                    //                                                                    new ReplaceOptions { IsUpsert = false });
+                    //                    if (replaceResult.ModifiedCount != 1)
+                    //                    {
+                    //                        throw new Exception("Giờ đã được đặt.");
+                    //                    }
+                    #endregion
+
+                    Examination newModel = _mapper.Map<ExaminationCreateModel, Examination>(model);
+                    newModel.BookedByUser = username;
+                    newModel.Status = BookingStatus.UNFINISHED;
+                    await _context.Examinations.InsertOneAsync( newModel);
+                    
+                   
 
                     result.Data = _mapper.Map<Examination, ExaminationViewModel>(newModel);
                     result.Succeed = true;
