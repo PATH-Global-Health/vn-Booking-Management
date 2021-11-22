@@ -204,7 +204,7 @@ namespace Services.Core
                     var toFilter = Builders<Examination>.Filter.Lte(mt => mt.Date, to.Value);
                     basefilter = basefilter & toFilter;
                 }
-               
+
                 // return
                 var rs = await _context.Examinations.FindAsync(basefilter);
                 var list = await rs.ToListAsync();
@@ -295,37 +295,25 @@ namespace Services.Core
                     await _context.Examinations.UpdateOneAsync( filter, update);
                     var modelUpdated = _context.Examinations.Find(filter).FirstOrDefault();
 
-                    // try sync interval
-                    if (model.Status == (int)BookingStatus.CANCELED || model.Status == (int)BookingStatus.DOCTOR_CANCEL)
-                    {
-                        // create an instanceSync model 
-                        var syncModel = new IntervalSyncModel()
-                        {
-                            Id = modelUpdated.Interval.Id,
-                            IsAvailable = true,
-                        };
-                        // sync instance with schedule module
-                        var syncResponse = SyncInterval(syncModel);
-                        var syncResult = JsonConvert.DeserializeObject<ResultModel>(syncResponse);
-
-                        if (!syncResult.Succeed)
-                        {
-                            // throw if fail to sync
-                            throw new Exception("Không thể đồng bộ với Shedule-Service: " + syncResult.ErrorMessage);
-                        }
-
-                        if (modelUpdated.Unit.Username.Contains("hcdc."))
-                        {
-                            // create an exam cancel booking model
-                            var cancelModel = new CancelBookingExamModel()
-                            {
-                                BookingExamId = modelUpdated.Id,
-                                PersonId = modelUpdated.Customer.Id,
-                                IntervalId = modelUpdated.Interval.Id,
-                                Status = model.Status
-                            };
-                        }
-                    }
+//                    // try sync interval
+//                    if (model.Status == (int)BookingStatus.CANCELED || model.Status == (int)BookingStatus.DOCTOR_CANCEL)
+//                    {
+//                        // create an instanceSync model 
+//                        var syncModel = new IntervalSyncModel()
+//                        {
+//                            Id = modelUpdated.Interval.Id,
+//                            IsAvailable = true,
+//                        };
+//                        // sync instance with schedule module
+//                        var syncResponse = SyncInterval(syncModel);
+//                        var syncResult = JsonConvert.DeserializeObject<ResultModel>(syncResponse);
+//
+//                        if (!syncResult.Succeed)
+//                        {
+//                            // throw if fail to sync
+//                            throw new Exception("Không thể đồng bộ với Shedule-Service: " + syncResult.ErrorMessage);
+//                        }
+//                    }
 
                     result.Data = _mapper.Map<Examination, ExaminationViewModel>(modelUpdated);
                     result.Succeed = true;
