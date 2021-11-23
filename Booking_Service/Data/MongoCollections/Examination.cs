@@ -36,7 +36,10 @@ namespace Data.MongoCollections
 
         public string TypeRating { get; set; }
         public string Desc { get; set; }
-      
+
+        public ConsultingContent ConsultingContent { get; set; }
+        public TestingContent TestingContent { get; set; }
+
 
     }
 
@@ -47,11 +50,29 @@ namespace Data.MongoCollections
         public DateTime EntryingDate { get; set; }
     }
 
-    public class RatingExamination
+    public class ConsultingContent
     {
-        public string Rating { get; set; }
-        public string RatingType { get; set; }
-        public string Desc { get; set; }
-
+        public string Type { get; set; }
+        public string Content { get; set; }
+        public string Result { get; set; }
+        public string Note { get; set; }
     }
+
+    public class TestingContent
+    {
+        public string TypeTesting { get; set; }
+        public int Quantity { get; set; }
+        public bool IsReceived { get; set; }
+        public bool IsPickUpAtTheFacility { get; set; }
+        public string ReceivingAddress { get; set; }
+        public string ProvinceCode { get; set; }
+        public string DistrictCode { get; set; }
+        public string WardCode { get; set; }
+        public string Receiver { get; set; }
+        public string RecipientPhoneNumber { get; set; }
+        public string Content { get; set; }
+        public string Result { get; set; }
+        public string Note { get; set; }
+    }
+
 }

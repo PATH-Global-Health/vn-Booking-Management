@@ -152,16 +152,16 @@ namespace Services.Core
                 {
  //                   await session.AbortTransactionAsync();
                     // Fail vì 1 lý do gì đó, nhưng schedule đã thay đổi trạng thái thành công -> thay đổi trạng thái của schedule về như cũ
-                    if (syncResult.Succeed)
-                    {
-                        // create an instanceSync model 
-                        var syncModel = new IntervalSyncModel()
-                        {
-                            Id = model.Interval.Id,
-                            IsAvailable = true,
-                        };
-                        SyncInterval(syncModel);
-                    }
+//                    if (syncResult.Succeed)
+//                    {
+//                        // create an instanceSync model 
+//                        var syncModel = new IntervalSyncModel()
+//                        {
+//                            Id = model.Interval.Id,
+//                            IsAvailable = true,
+//                        };
+//                        SyncInterval(syncModel);
+//                    }
                     result.Succeed = false;
                     result.ErrorMessage = e.InnerException != null ? e.InnerException.Message + "\n" + e.StackTrace : e.Message + "\n" + e.StackTrace;
                     result.ErrorMessage += Environment.NewLine + "Unit Username: " + model.Unit.Username.GetUnitUsernameForExamination(); // Debug, ko cần thiết
@@ -290,6 +290,42 @@ namespace Services.Core
                         update = update.Set(mt => mt.Desc, model.Desc);
                     }
 
+                    //------------------------------
+
+                    if (!string.IsNullOrEmpty(model.ConsultingContent.Content))
+                    {
+                        update = update.Set(mt => mt.ConsultingContent.Content, model.ConsultingContent.Content);
+                    }
+
+                    if (!string.IsNullOrEmpty(model.ConsultingContent.Note))
+                    {
+                        update = update.Set(mt => mt.ConsultingContent.Note, model.ConsultingContent.Note);
+                    }
+
+                    if (!string.IsNullOrEmpty(model.ConsultingContent.Result))
+                    {
+                        update = update.Set(mt => mt.ConsultingContent.Result, model.ConsultingContent.Result);
+                    }
+
+                    if (!string.IsNullOrEmpty(model.ConsultingContent.Type))
+                    {
+                        update = update.Set(mt => mt.ConsultingContent.Type, model.ConsultingContent.Type);
+                    }
+
+
+                    if (!string.IsNullOrEmpty(model.TestingContent.Content))
+                    {
+                        update = update.Set(mt => mt.TestingContent.Content, model.TestingContent.Content);
+                    }
+                    if (!string.IsNullOrEmpty(model.TestingContent.Note))
+                    {
+                        update = update.Set(mt => mt.TestingContent.Note, model.TestingContent.Note);
+                    }
+                    if (!string.IsNullOrEmpty(model.TestingContent.Result))
+                    {
+                        update = update.Set(mt => mt.TestingContent.Result, model.TestingContent.Result);
+                    }
+                    
 
                     // execute statement
                     await _context.Examinations.UpdateOneAsync( filter, update);
@@ -330,6 +366,8 @@ namespace Services.Core
             return result;
         }
 
+
+        
         public async Task<ResultModel> Delete(ExaminationDeleteModel model)
         {
             var result = new ResultModel();

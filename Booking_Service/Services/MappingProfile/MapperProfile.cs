@@ -22,6 +22,8 @@ namespace Services.MappingProfile
             CreateMap<ServiceType, ServiceTypeModel>().ReverseMap();
             CreateMap<Unit, UnitModel>().ReverseMap();
             CreateMap<ExitInformation, ExitInformationModel>().ReverseMap();
+            CreateMap<ConsultingContent, ConsultingContentModel>().ReverseMap();
+            CreateMap<TestingContent, TestingContentModel>().ReverseMap();
             //----------------
             CreateMap<App, AppModel>().ReverseMap();
             CreateMap<Facility, FacilityModel>().ReverseMap();

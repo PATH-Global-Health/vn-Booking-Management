@@ -66,7 +66,7 @@ namespace Services.RabbitMQ
 
                 channel.BasicPublish(
                     exchange: "",
-                    routingKey: "BookingU3",
+                    routingKey: "BookingU4",
                     basicProperties: props,
                     body: messageBytes);
 
