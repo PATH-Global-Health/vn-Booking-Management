@@ -11,7 +11,9 @@ using Services.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using MoreLinq;
 
 namespace Services.Core
 {
@@ -205,8 +207,11 @@ namespace Services.Core
                     basefilter = basefilter & toFilter;
                 }
 
+
                 // return
                 var rs = await _context.Examinations.FindAsync(basefilter);
+               
+                
                 var list = await rs.ToListAsync();
                 result.Data = _mapper.Map<List<Examination>, List<ExaminationViewModel>>(list);
                 result.Succeed = true;
@@ -224,7 +229,10 @@ namespace Services.Core
             var result = new ResultModel();
             try
             {
-                var rs = await _context.Examinations.FindAsync(_ => _.BookedByUser == username);
+                var rs = await _context.Examinations.FindAsync(_ => _.BookedByUser == username,new FindOptions<Examination, Examination>()
+                {
+                    Sort = Builders<Examination>.Sort.Descending(x=> x.Date)
+                });
                 var list = await rs.ToListAsync();
 
                 result.Data = _mapper.Map<List<Examination>, List<ExaminationViewModel>>(list);

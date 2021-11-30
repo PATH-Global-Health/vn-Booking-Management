@@ -20,6 +20,9 @@ namespace Data.ViewModels
         public string Information { get; set; }
         public string Address { get; set; }
         public string Username { get; set; }
+        public string ProvinceCode { get; set; }
+        public string DistrictCode { get; set; }
+        public string WardCode { get; set; }
     }
 
     public class DoctorModel
