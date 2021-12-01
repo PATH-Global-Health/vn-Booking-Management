@@ -1,0 +1,27 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: chis-booking
+  namespace: default
+  labels:
+    app: chis-booking
+    env: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chis-booking
+  template:
+    metadata:
+      labels:
+        app: chis-booking
+        role: rolling-update
+        build_number: '<TAG>'
+    spec:
+      containers:
+        - name: chis-booking
+          image: 'bakcovn/chis-booking:latest'
+      imagePullSecrets:
+        - name: regcred
+  strategy:
+    type: RollingUpdate
