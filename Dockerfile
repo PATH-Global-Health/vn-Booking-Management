@@ -10,7 +10,7 @@ COPY ["Booking_Service/Data/Data.csproj", "Data/"]
 COPY ["Booking_Service/Services/Services.csproj", "Services/"]
 RUN dotnet restore "Booking_Service_App/Booking_Service_App.csproj"
 COPY . .
-WORKDIR "/src/Booking_Service_App/Booking_Service_App"
+WORKDIR "/src/Booking_Service/Booking_Service_App"
 RUN dotnet build "Booking_Service_App.csproj" -c Release -o /app/build
 
 FROM build AS publish
