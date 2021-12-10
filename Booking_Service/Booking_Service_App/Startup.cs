@@ -44,7 +44,7 @@ namespace Booking_Service_App
 
             app.UseCors("AllowAll");
 
-            app.UseHttpsRedirection();
+ //           app.UseHttpsRedirection();
 
             app.UseRouting();
 
