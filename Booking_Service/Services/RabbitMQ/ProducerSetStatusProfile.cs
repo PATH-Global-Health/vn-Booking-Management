@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
+using Data.Constants;
 using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -67,7 +68,7 @@ namespace Services.RabbitMQ
 
                 channel.BasicPublish(
                     exchange: "",
-                    routingKey: "SetStatusProfile5",
+                    routingKey: RabbitQueue.SET_STATUS_PROFILE,
                     basicProperties: props,
                     body: messageBytes);
 

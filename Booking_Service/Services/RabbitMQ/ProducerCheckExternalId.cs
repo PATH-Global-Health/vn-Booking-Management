@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
+using Data.Constants;
 using Data.ViewModels;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -70,7 +71,7 @@ namespace Services.RabbitMQ
 
                 channel.BasicPublish(
                     exchange: "",
-                    routingKey: "IsExistExternalId1",
+                    routingKey: RabbitQueue.EXIST_EXTERNAL_ID,
                     basicProperties: props,
                     body: messageBytes);
 

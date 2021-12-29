@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
+using Data.Constants;
 using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -66,7 +67,7 @@ namespace Services.RabbitMQ
 
                 channel.BasicPublish(
                     exchange: "",
-                    routingKey: "AddReferTicket2",
+                    routingKey: RabbitQueue.ADD_REFER_TICKET,
                     basicProperties: props,
                     body: messageBytes);
 
